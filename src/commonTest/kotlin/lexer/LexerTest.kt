@@ -91,4 +91,34 @@ class LexerTest {
       assertEquals(it, lexer.nextToken())
     }
   }
+
+    @Test
+  fun `nextToken support for more single character operators`() {
+    val input = """
+      !-/*5;
+      5 < 10 > 5;
+      """.trimIndent()
+
+    val expectedTokens = listOf(
+      Token(BANG, "!"),
+      Token(MINUS, "-"),
+      Token(SLASH, "/"),
+      Token(ASTERISK, "*"),
+      Token(INT, "5"),
+      Token(SEMICOLON, ";"),
+      Token(INT, "5"),
+      Token(LT, "<"),
+      Token(INT, "10"),
+      Token(GT, ">"),
+      Token(INT, "5"),
+      Token(SEMICOLON, ";"),
+      Token(EOF, "")
+    )
+
+    val lexer = Lexer(input)
+
+    expectedTokens.forEach {
+      assertEquals(it, lexer.nextToken())
+    }
+  }
 }

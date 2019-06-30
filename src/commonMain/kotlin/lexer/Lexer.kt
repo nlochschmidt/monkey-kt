@@ -13,16 +13,22 @@ class Lexer(val input: String) {
   init {
     readChar()
   }
-  
+
   fun nextToken(): Token {
     skipWhitespace()
     val token = when (currentChar) {
       '=' -> Token(ASSIGN, "$currentChar")
+      '+' -> Token(PLUS, "$currentChar")
+      '-' -> Token(MINUS, "$currentChar")
+      '!' -> Token(BANG, "$currentChar")
+      '*' -> Token(ASTERISK, "$currentChar")
+      '/' -> Token(SLASH, "$currentChar")
+      '<' -> Token(LT, "$currentChar")
+      '>' -> Token(GT, "$currentChar")
       ';' -> Token(SEMICOLON, "$currentChar")
       '(' -> Token(LPAREN, "$currentChar")
       ')' -> Token(RPAREN, "$currentChar")
       ',' -> Token(COMMA, "$currentChar")
-      '+' -> Token(PLUS, "$currentChar")
       '{' -> Token(LBRACE, "$currentChar")
       '}' -> Token(RBRACE, "$currentChar")
       NULL -> Token(EOF, "")
@@ -51,7 +57,7 @@ class Lexer(val input: String) {
 
   private fun lookupIdentifierToken(identifier: String): Token {
     return Token(
-      type = KEYWORDS.getOrElse(identifier) { IDENT }, 
+      type = KEYWORDS.getOrElse(identifier) { IDENT },
       literal = identifier
     )
   }
