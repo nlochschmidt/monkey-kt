@@ -8,6 +8,7 @@ insert_final_newline = true
 [*.kt]
 indent_size = 2
 indent_style = space
+trim_trailing_whitespace = true
 
 [Makefile]
 indent_style = tab
