@@ -159,4 +159,31 @@ class LexerTest {
       assertEquals(it, lexer.nextToken())
     }
   }
+
+  @Test
+  fun `nextToken support for == and !=`() {
+    val input = """
+      10 == 10;
+      10 != 9;
+      """.trimIndent()
+
+    val expectedTokens = listOf(
+      Token(INT, "10"),
+      Token(EQ, "=="),
+      Token(INT, "10"),
+      Token(SEMICOLON, ";"),
+      Token(INT, "10"),
+      Token(NOT_EQ, "!="),
+      Token(INT, "9"),
+      Token(SEMICOLON, ";"),
+      Token(EOF, "")
+    )
+
+    val lexer = Lexer(input)
+
+    expectedTokens.forEach {
+      assertEquals(it, lexer.nextToken())
+    }
+  }
+
 }
