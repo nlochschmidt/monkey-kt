@@ -7,7 +7,6 @@ import lexer.Lexer
 import token.Token
 import token.TokenType.*
 
-
 class LexerTest {
 
   @Test
