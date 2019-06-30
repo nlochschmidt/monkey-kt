@@ -28,7 +28,7 @@ watch "make test" ./src
 make
 ```
 
-## Run
+## Run Monkey REPL
 
 ```
 ./monkey.kexe
