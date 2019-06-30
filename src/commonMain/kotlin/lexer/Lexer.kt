@@ -91,7 +91,12 @@ class Lexer(val input: String) {
 
     val KEYWORDS : Map<String, TokenType>  = mapOf(
       "fn" to FUNCTION,
-      "let" to LET
-    )
+      "let" to LET,
+      "true" to TRUE,
+      "false" to FALSE,
+      "if" to IF,
+      "else" to ELSE,
+      "return" to RETURN
+      )
   }
 }
