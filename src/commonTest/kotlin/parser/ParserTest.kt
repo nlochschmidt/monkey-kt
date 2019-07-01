@@ -23,6 +23,7 @@ class ParserTest {
     val parser = Parser(lexer)
 
     val program = parser.parseProgram()
+    checkParseErrors(parser)
 
     assertEquals(3, program.statements.size)
 
@@ -38,5 +39,13 @@ class ParserTest {
       is LetStatement -> assertEquals(identifier, statement.name.value)
       else -> fail("Expected let statement, found ${statement::class.simpleName}")
     }
+  }
+
+  fun checkParseErrors(parser: Parser) {
+    if (parser.errors.isEmpty()) return
+
+    val errorsAsString = parser.errors.joinToString("\n  ", "  ")
+
+    fail("Parser has ${parser.errors.size} errors\n$errorsAsString")
   }
 }

@@ -18,6 +18,11 @@ class Parser(val lexer: Lexer) {
   var currentToken: Token = lexer.nextToken()
   var peekToken: Token = lexer.nextToken()
 
+  val _errors = mutableListOf<String>()
+
+  val errors: List<String>
+    get() = _errors.toList()
+
   fun nextToken() {
     currentToken = peekToken
     peekToken = lexer.nextToken()
@@ -26,7 +31,7 @@ class Parser(val lexer: Lexer) {
   fun parseProgram(): Program {
     val statements = mutableListOf<Statement?>()
 
-    while (currentToken.type != EOF) {
+    while (!currentTokenIs(EOF)) {
       statements.add(parseStatement())
       nextToken()
     }
@@ -42,7 +47,6 @@ class Parser(val lexer: Lexer) {
   }
 
   fun parseLetStatement(): LetStatement? {
-
     val letToken = currentToken
 
     if (!expectPeek(IDENT)) {
@@ -55,7 +59,7 @@ class Parser(val lexer: Lexer) {
       return null
     }
 
-    // TODO: Skupping the expresions until we encounter a semicolon
+    // TODO: Skipping the expresions until we encounter a semicolon
     while (!currentTokenIs(SEMICOLON)) {
       nextToken()
     }
@@ -74,7 +78,12 @@ class Parser(val lexer: Lexer) {
       nextToken()
       true
     } else {
+      peekError(type)
       false
     }
+  }
+
+  fun peekError(type: TokenType) {
+    _errors.add("expected next token to be $type, got ${peekToken.type} instead")
   }
 }
