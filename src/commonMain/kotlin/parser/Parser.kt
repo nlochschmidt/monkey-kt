@@ -7,11 +7,13 @@ import token.TokenType.ASSIGN
 import token.TokenType.EOF
 import token.TokenType.IDENT
 import token.TokenType.LET
+import token.TokenType.RETURN
 import token.TokenType.SEMICOLON
 import kotlin.ast.Expression
 import kotlin.ast.Identifier
 import kotlin.ast.LetStatement
 import kotlin.ast.Program
+import kotlin.ast.ReturnStatement
 import kotlin.ast.Statement
 
 class Parser(val lexer: Lexer) {
@@ -42,6 +44,7 @@ class Parser(val lexer: Lexer) {
   fun parseStatement(): Statement? {
     return when(currentToken.type) {
       LET -> parseLetStatement()
+      RETURN -> parseReturnStatement()
       else -> null
     }
   }
@@ -59,14 +62,23 @@ class Parser(val lexer: Lexer) {
       return null
     }
 
+    val expression = parseExpression()
+    return LetStatement(letToken, name, expression)
+  }
+
+  fun parseReturnStatement(): ReturnStatement {
+    val returnToken = currentToken
+    val expression = parseExpression()
+    return ReturnStatement(returnToken, expression)
+  }
+
+  fun parseExpression(): Expression {
     // TODO: Skipping the expresions until we encounter a semicolon
     while (!currentTokenIs(SEMICOLON)) {
       nextToken()
     }
 
-    return LetStatement(letToken, name, object : Expression {
-      override val literal: String = "Not parsed"
-    })
+    return UnparsedExpression
   }
 
   fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type
@@ -85,5 +97,9 @@ class Parser(val lexer: Lexer) {
 
   fun peekError(type: TokenType) {
     _errors.add("expected next token to be $type, got ${peekToken.type} instead")
+  }
+
+  object UnparsedExpression : Expression {
+    override val literal: String = "Not parsed"
   }
 }

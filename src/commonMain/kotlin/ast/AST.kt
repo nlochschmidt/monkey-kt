@@ -31,3 +31,11 @@ data class Identifier(
   override val literal: String
     get() = token.literal
 }
+
+data class ReturnStatement(
+  val token: Token,
+  val returnValue: Expression
+) : Statement {
+  override val literal: String
+    get() = token.literal
+}
