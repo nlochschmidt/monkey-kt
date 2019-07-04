@@ -5,15 +5,15 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 import lexer.Lexer
-import kotlin.ast.Expression
-import kotlin.ast.ExpressionStatement
-import kotlin.ast.Program
-import kotlin.ast.Identifier
-import kotlin.ast.IntegerLiteral
-import kotlin.ast.LetStatement
-import kotlin.ast.PrefixExpression
-import kotlin.ast.ReturnStatement
-import kotlin.ast.Statement
+import ast.Expression
+import ast.ExpressionStatement
+import ast.Program
+import ast.Identifier
+import ast.IntegerLiteral
+import ast.LetStatement
+import ast.PrefixExpression
+import ast.ReturnStatement
+import ast.Statement
 
 class ParserTest {
 

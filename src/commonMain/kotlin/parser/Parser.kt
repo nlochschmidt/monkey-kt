@@ -14,15 +14,15 @@ import token.TokenType.LET
 import token.TokenType.MINUS
 import token.TokenType.RETURN
 import token.TokenType.SEMICOLON
-import kotlin.ast.Expression
-import kotlin.ast.ExpressionStatement
-import kotlin.ast.Identifier
-import kotlin.ast.IntegerLiteral
-import kotlin.ast.LetStatement
-import kotlin.ast.PrefixExpression
-import kotlin.ast.Program
-import kotlin.ast.ReturnStatement
-import kotlin.ast.Statement
+import ast.Expression
+import ast.ExpressionStatement
+import ast.Identifier
+import ast.IntegerLiteral
+import ast.LetStatement
+import ast.PrefixExpression
+import ast.Program
+import ast.ReturnStatement
+import ast.Statement
 
 typealias PrefixParseFunction = () -> Expression
 typealias InfixParseFunction = (Expression) -> Expression

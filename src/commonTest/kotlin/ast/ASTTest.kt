@@ -2,9 +2,6 @@ package ast
 import token.Token
 import token.TokenType.IDENT
 import token.TokenType.LET
-import kotlin.ast.Identifier
-import kotlin.ast.LetStatement
-import kotlin.ast.Program
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

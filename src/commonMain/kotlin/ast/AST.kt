@@ -1,4 +1,4 @@
-package kotlin.ast
+package ast
 
 import token.Token
 
