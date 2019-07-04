@@ -67,3 +67,14 @@ data class IntegerLiteral(
 
   override fun toString(): String = token.literal
 }
+
+data class PrefixExpression(
+  val token: Token,
+  val operator: String,
+  val right: Expression
+): Expression {
+  override val literal: String
+    get() = token.literal
+
+  override fun toString(): String = "($operator$right)"
+}

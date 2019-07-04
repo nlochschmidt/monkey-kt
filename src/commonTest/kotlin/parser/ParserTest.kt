@@ -11,6 +11,7 @@ import kotlin.ast.Program
 import kotlin.ast.Identifier
 import kotlin.ast.IntegerLiteral
 import kotlin.ast.LetStatement
+import kotlin.ast.PrefixExpression
 import kotlin.ast.ReturnStatement
 import kotlin.ast.Statement
 
@@ -72,16 +73,39 @@ class ParserTest {
     val input = "5;"
 
     val program = parseValidProgram(input)
+    assertEquals(1, program.statements.size)
+
+    val expression = getExpression(program.statements.first())
+    testIntegerLiteral(expression, 5)
+  }
+
+  private fun testIntegerLiteral(expression: Expression, value: Int) {
+    when (expression) {
+      is IntegerLiteral -> assertEquals(value, expression.value)
+      else -> fail("$expression is not an integer literal")
+      }
+  }
+
+  @Test
+  fun `negate prefix expression`() {
+    val program = parseValidProgram("!5;")
 
     assertEquals(1, program.statements.size)
 
     val expression = getExpression(program.statements.first())
+    val prefixExpression = testPrefixExpression(expression, "!")
+    testIntegerLiteral(prefixExpression.right, 5)
+  }
 
-    when (expression) {
-      is IntegerLiteral -> assertEquals(5, expression.value)
-      else -> fail("$expression is not an integer literal")
-    }
+  @Test
+  fun `minus prefix expression`() {
+    val program = parseValidProgram("-15;")
 
+    assertEquals(1, program.statements.size)
+
+    val expression = getExpression(program.statements.first())
+    val prefixExpression = testPrefixExpression(expression, "-")
+    testIntegerLiteral(prefixExpression.right, 15)
   }
 
   private fun parseValidProgram(input: String): Program {
@@ -93,28 +117,42 @@ class ParserTest {
     return program
   }
 
-  fun testLetStatement(statement: Statement, identifier: String) {
+  private fun testLetStatement(statement: Statement, identifier: String) {
     when(statement) {
       is LetStatement -> assertEquals(identifier, statement.name.value)
       else -> fail("Expected let statement, found ${statement::class.simpleName}")
     }
   }
 
-  fun testReturnStatement(statement: Statement) {
+  private fun testReturnStatement(statement: Statement) {
     when(statement) {
       is ReturnStatement -> Unit
       else -> fail("Expected return statement, found ${statement::class.simpleName}")
     }
   }
 
-  fun getExpression(statement: Statement): Expression {
+  private fun getExpression(statement: Statement): Expression {
     return when(statement) {
       is ExpressionStatement -> statement.expression
       else -> fail("$statement is not an expression statement")
     }
   }
 
-  fun checkParseErrors(parser: Parser) {
+  private fun testPrefixExpression(
+    expression: Expression,
+    operator: String
+  ): PrefixExpression {
+    return when (expression) {
+      is PrefixExpression -> {
+        assertEquals(operator, expression.operator)
+        expression
+      }
+      else -> fail("$expression is not a prefix expression")
+    }
+  }
+
+
+  private fun checkParseErrors(parser: Parser) {
     if (parser.errors.isEmpty()) return
 
     val errorsAsString = parser.errors.joinToString("\n  ", "  ")

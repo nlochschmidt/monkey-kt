@@ -2,13 +2,16 @@ package parser
 
 import lexer.Lexer
 import parser.Precedence.LOWEST
+import parser.Precedence.PREFIX
 import token.Token
 import token.TokenType
 import token.TokenType.ASSIGN
+import token.TokenType.BANG
 import token.TokenType.EOF
 import token.TokenType.IDENT
 import token.TokenType.INT
 import token.TokenType.LET
+import token.TokenType.MINUS
 import token.TokenType.RETURN
 import token.TokenType.SEMICOLON
 import kotlin.ast.Expression
@@ -16,6 +19,7 @@ import kotlin.ast.ExpressionStatement
 import kotlin.ast.Identifier
 import kotlin.ast.IntegerLiteral
 import kotlin.ast.LetStatement
+import kotlin.ast.PrefixExpression
 import kotlin.ast.Program
 import kotlin.ast.ReturnStatement
 import kotlin.ast.Statement
@@ -42,7 +46,9 @@ class Parser(val lexer: Lexer) {
 
   val prefixParseFunctions = mapOf<TokenType, PrefixParseFunction>(
     IDENT to ::parseIdentifier,
-    INT to ::parseIntegerLiteral
+    INT to ::parseIntegerLiteral,
+    BANG to ::parsePrefixExpression,
+    MINUS to ::parsePrefixExpression
   )
   val infixParseFunctions = mapOf<TokenType, InfixParseFunction>()
 
@@ -87,14 +93,21 @@ class Parser(val lexer: Lexer) {
     if (!expectPeek(ASSIGN)) {
       return null
     }
-
+    nextToken()
     val expression = parseExpression(LOWEST)
+    if (peekTokenIs(SEMICOLON)) {
+      nextToken()
+    }
     return LetStatement(letToken, name, expression)
   }
 
   fun parseReturnStatement(): ReturnStatement {
     val returnToken = currentToken
+    nextToken()
     val expression = parseExpression(LOWEST)
+    if (peekTokenIs(SEMICOLON)) {
+      nextToken()
+    }
     return ReturnStatement(returnToken, expression)
   }
 
@@ -110,6 +123,7 @@ class Parser(val lexer: Lexer) {
 
   fun parseExpression(@Suppress("UNUSED_PARAMETER") precedence: Precedence): Expression {
     val prefixFunction = prefixParseFunctions.get(currentToken.type) ?: return run {
+      _errors.add("No prefix parse function for ${currentToken.type} found")
       // TODO: Skipping the expresions until we encounter a semicolon
       while (!currentTokenIs(SEMICOLON)) {
         nextToken()
@@ -133,6 +147,13 @@ class Parser(val lexer: Lexer) {
       return UnparsedExpression
     }
     return IntegerLiteral(currentToken, value)
+  }
+
+  fun parsePrefixExpression(): Expression {
+    val prefixToken = currentToken
+    nextToken()
+    val parseExpression = parseExpression(PREFIX)
+    return PrefixExpression(prefixToken, prefixToken.literal, parseExpression)
   }
 
   fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type
