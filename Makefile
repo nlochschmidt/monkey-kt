@@ -1,10 +1,10 @@
 TARGET		:= monkey
 MAIN_DIR	:= src/commonMain/kotlin/
-DEPS			:= $(wildcard $(MAIN_DIR)*/*.kt)
-KEXE			:= $(TARGET).kexe 
+DEPS		:= $(wildcard $(MAIN_DIR)*/*.kt)
+KEXE		:= $(TARGET).kexe
 
 TEST_DIR	:= src/commonTest/kotlin/
-TESTS			:= $(wildcard $(TEST_DIR)*.kt $(TEST_DIR)*/*.kt)
+TESTS		:= $(wildcard $(TEST_DIR)*.kt $(TEST_DIR)*/*.kt)
 
 .PHONY: all clean test
 

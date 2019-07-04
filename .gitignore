@@ -3,4 +3,9 @@
 *.kexe
 
 # IntelliJ IDEA
+/out/
 .idea
+
+# Gradle
+/.gradle/
+/build/
