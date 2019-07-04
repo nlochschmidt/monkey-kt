@@ -5,9 +5,11 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 import lexer.Lexer
+import kotlin.ast.Expression
 import kotlin.ast.ExpressionStatement
 import kotlin.ast.Program
 import kotlin.ast.Identifier
+import kotlin.ast.IntegerLiteral
 import kotlin.ast.LetStatement
 import kotlin.ast.ReturnStatement
 import kotlin.ast.Statement
@@ -57,15 +59,29 @@ class ParserTest {
 
     assertEquals(1, program.statements.size)
 
-    val firstStatement = when(val stmt = program.statements.first()) {
-      is ExpressionStatement -> stmt
-      else -> fail("$stmt is not an expression")
+    val expression = getExpression(program.statements.first())
+
+    when(expression) {
+      is Identifier -> assertEquals("someIdentifier", expression.value)
+      else -> fail("$expression is not an identifier")
+    }
+  }
+
+  @Test
+  fun `integer expression`() {
+    val input = "5;"
+
+    val program = parseValidProgram(input)
+
+    assertEquals(1, program.statements.size)
+
+    val expression = getExpression(program.statements.first())
+
+    when (expression) {
+      is IntegerLiteral -> assertEquals(5, expression.value)
+      else -> fail("$expression is not an integer literal")
     }
 
-    when(val expression = firstStatement.expression) {
-      is Identifier -> assertEquals("someIdentifier", expression.value)
-      else -> fail ("$expression is not an identifier")
-    }
   }
 
   private fun parseValidProgram(input: String): Program {
@@ -88,6 +104,13 @@ class ParserTest {
     when(statement) {
       is ReturnStatement -> Unit
       else -> fail("Expected return statement, found ${statement::class.simpleName}")
+    }
+  }
+
+  fun getExpression(statement: Statement): Expression {
+    return when(statement) {
+      is ExpressionStatement -> statement.expression
+      else -> fail("$statement is not an expression statement")
     }
   }
 

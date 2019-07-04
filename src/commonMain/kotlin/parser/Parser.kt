@@ -7,12 +7,14 @@ import token.TokenType
 import token.TokenType.ASSIGN
 import token.TokenType.EOF
 import token.TokenType.IDENT
+import token.TokenType.INT
 import token.TokenType.LET
 import token.TokenType.RETURN
 import token.TokenType.SEMICOLON
 import kotlin.ast.Expression
 import kotlin.ast.ExpressionStatement
 import kotlin.ast.Identifier
+import kotlin.ast.IntegerLiteral
 import kotlin.ast.LetStatement
 import kotlin.ast.Program
 import kotlin.ast.ReturnStatement
@@ -39,7 +41,8 @@ class Parser(val lexer: Lexer) {
   var peekToken: Token = lexer.nextToken()
 
   val prefixParseFunctions = mapOf<TokenType, PrefixParseFunction>(
-    IDENT to ::parseIdentifier
+    IDENT to ::parseIdentifier,
+    INT to ::parseIntegerLiteral
   )
   val infixParseFunctions = mapOf<TokenType, InfixParseFunction>()
 
@@ -121,6 +124,15 @@ class Parser(val lexer: Lexer) {
 
   fun parseIdentifier(): Expression {
     return Identifier(currentToken, currentToken.literal)
+  }
+
+  fun parseIntegerLiteral(): Expression {
+    val value = try {
+      currentToken.literal.toInt()
+    } catch (ex: NumberFormatException) {
+      return UnparsedExpression
+    }
+    return IntegerLiteral(currentToken, value)
   }
 
   fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type
