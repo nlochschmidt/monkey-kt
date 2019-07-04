@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 import lexer.Lexer
+import kotlin.ast.ExpressionStatement
 import kotlin.ast.Program
 import kotlin.ast.Identifier
 import kotlin.ast.LetStatement
@@ -45,6 +46,25 @@ class ParserTest {
 
     program.statements.forEach { statement ->
       testReturnStatement(statement)
+    }
+  }
+
+  @Test
+  fun `identifier expression`() {
+    val input = "someIdentifier;"
+
+    val program = parseValidProgram(input)
+
+    assertEquals(1, program.statements.size)
+
+    val firstStatement = when(val stmt = program.statements.first()) {
+      is ExpressionStatement -> stmt
+      else -> fail("$stmt is not an expression")
+    }
+
+    when(val expression = firstStatement.expression) {
+      is Identifier -> assertEquals("someIdentifier", expression.value)
+      else -> fail ("$expression is not an identifier")
     }
   }
 

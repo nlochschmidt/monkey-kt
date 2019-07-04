@@ -47,3 +47,13 @@ data class ReturnStatement(
 
   override fun toString() = "$literal $returnValue;"
 }
+
+data class ExpressionStatement(
+  val token: Token,
+  val expression: Expression
+) : Statement {
+  override val literal: String
+    get() = token.literal
+
+  override fun toString() = ""
+}
