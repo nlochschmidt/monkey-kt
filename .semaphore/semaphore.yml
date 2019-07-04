@@ -1,0 +1,16 @@
+# For more Java information and examples, see
+# https://docs.semaphoreci.com/article/85-language-java
+version: v1.0
+name: Test Monkey Interpreter for Kotlin
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Test
+    task:
+      jobs:
+        - name: Gradle Check
+          commands:
+            - checkout
+            - ./gradlew check
