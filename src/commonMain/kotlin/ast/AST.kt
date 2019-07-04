@@ -13,6 +13,8 @@ interface Expression : Node
 data class Program(val statements: List<Statement>) : Node {
   override val literal: String
     get() = statements.firstOrNull()?.literal ?: ""
+
+  override fun toString(): String = statements.joinToString("\n")
 }
 
 data class LetStatement(
@@ -22,6 +24,8 @@ data class LetStatement(
 ) : Statement {
   override val literal: String
     get() = token.literal
+
+  override fun toString() = "$literal $name = $value;"
 }
 
 data class Identifier(
@@ -30,6 +34,8 @@ data class Identifier(
 ): Expression {
   override val literal: String
     get() = token.literal
+
+  override fun toString() = value
 }
 
 data class ReturnStatement(
@@ -38,4 +44,6 @@ data class ReturnStatement(
 ) : Statement {
   override val literal: String
     get() = token.literal
+
+  override fun toString() = "$literal $returnValue;"
 }
