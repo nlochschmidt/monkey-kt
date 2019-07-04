@@ -40,11 +40,11 @@ enum class Precedence {
   CALL
 }
 
-class Parser(val lexer: Lexer) {
-  var currentToken: Token = lexer.nextToken()
-  var peekToken: Token = lexer.nextToken()
+class Parser(private val lexer: Lexer) {
+  private var currentToken: Token = lexer.nextToken()
+  private var peekToken: Token = lexer.nextToken()
 
-  val prefixParseFunctions = mapOf<TokenType, PrefixParseFunction>(
+  private val prefixParseFunctions = mapOf<TokenType, PrefixParseFunction>(
     IDENT to ::parseIdentifier,
     INT to ::parseIntegerLiteral,
     BANG to ::parsePrefixExpression,
@@ -52,12 +52,12 @@ class Parser(val lexer: Lexer) {
   )
   val infixParseFunctions = mapOf<TokenType, InfixParseFunction>()
 
-  val _errors = mutableListOf<String>()
+  private val _errors = mutableListOf<String>()
 
   val errors: List<String>
     get() = _errors.toList()
 
-  fun nextToken() {
+  private fun nextToken() {
     currentToken = peekToken
     peekToken = lexer.nextToken()
   }
@@ -73,7 +73,7 @@ class Parser(val lexer: Lexer) {
     return Program(statements.filterNotNull())
   }
 
-  fun parseStatement(): Statement? {
+  private fun parseStatement(): Statement? {
     return when(currentToken.type) {
       LET -> parseLetStatement()
       RETURN -> parseReturnStatement()
@@ -81,7 +81,7 @@ class Parser(val lexer: Lexer) {
     }
   }
 
-  fun parseLetStatement(): LetStatement? {
+  private fun parseLetStatement(): LetStatement? {
     val letToken = currentToken
 
     if (!expectPeek(IDENT)) {
@@ -101,7 +101,7 @@ class Parser(val lexer: Lexer) {
     return LetStatement(letToken, name, expression)
   }
 
-  fun parseReturnStatement(): ReturnStatement {
+  private fun parseReturnStatement(): ReturnStatement {
     val returnToken = currentToken
     nextToken()
     val expression = parseExpression(LOWEST)
@@ -111,7 +111,7 @@ class Parser(val lexer: Lexer) {
     return ReturnStatement(returnToken, expression)
   }
 
-  fun parseExpressionStatement(): ExpressionStatement {
+  private fun parseExpressionStatement(): ExpressionStatement {
     val expressionStatement = ExpressionStatement(currentToken, parseExpression(LOWEST))
 
     if (peekTokenIs(SEMICOLON)) {
@@ -121,7 +121,7 @@ class Parser(val lexer: Lexer) {
     return expressionStatement
   }
 
-  fun parseExpression(@Suppress("UNUSED_PARAMETER") precedence: Precedence): Expression {
+  private fun parseExpression(@Suppress("UNUSED_PARAMETER") precedence: Precedence): Expression {
     val prefixFunction = prefixParseFunctions.get(currentToken.type) ?: return run {
       _errors.add("No prefix parse function for ${currentToken.type} found")
       // TODO: Skipping the expresions until we encounter a semicolon
@@ -136,11 +136,11 @@ class Parser(val lexer: Lexer) {
     return leftExpression
   }
 
-  fun parseIdentifier(): Expression {
+  private fun parseIdentifier(): Expression {
     return Identifier(currentToken, currentToken.literal)
   }
 
-  fun parseIntegerLiteral(): Expression {
+  private fun parseIntegerLiteral(): Expression {
     val value = try {
       currentToken.literal.toInt()
     } catch (ex: NumberFormatException) {
@@ -149,18 +149,18 @@ class Parser(val lexer: Lexer) {
     return IntegerLiteral(currentToken, value)
   }
 
-  fun parsePrefixExpression(): Expression {
+  private fun parsePrefixExpression(): Expression {
     val prefixToken = currentToken
     nextToken()
     val parseExpression = parseExpression(PREFIX)
     return PrefixExpression(prefixToken, prefixToken.literal, parseExpression)
   }
 
-  fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type
+  private fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type
 
-  fun peekTokenIs(type: TokenType): Boolean = peekToken.type == type
+  private fun peekTokenIs(type: TokenType): Boolean = peekToken.type == type
 
-  fun expectPeek(type: TokenType): Boolean {
+  private fun expectPeek(type: TokenType): Boolean {
     return if (peekTokenIs(type)) {
       nextToken()
       true
@@ -170,7 +170,7 @@ class Parser(val lexer: Lexer) {
     }
   }
 
-  fun peekError(type: TokenType) {
+  private fun peekError(type: TokenType) {
     _errors.add("expected next token to be $type, got ${peekToken.type} instead")
   }
 

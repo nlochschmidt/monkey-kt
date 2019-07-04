@@ -1,11 +1,10 @@
 package lexer
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-
-import lexer.Lexer
 import token.Token
 import token.TokenType.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class LexerTest {
 

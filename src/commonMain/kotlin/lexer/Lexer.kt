@@ -4,11 +4,11 @@ import token.Token
 import token.TokenType
 import token.TokenType.*
 
-class Lexer(val input: String) {
+class Lexer(private val input: String) {
 
-  var position: Int = 0
-  var readPosition: Int = 0
-  var currentChar: Char = NULL
+  private var position: Int = 0
+  private var readPosition: Int = 0
+  private var currentChar: Char = NULL
 
   init {
     readChar()
