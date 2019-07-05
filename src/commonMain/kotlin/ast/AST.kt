@@ -55,7 +55,7 @@ data class ExpressionStatement(
   override val literal: String
     get() = token.literal
 
-  override fun toString() = ""
+  override fun toString() = expression.toString()
 }
 
 data class IntegerLiteral(

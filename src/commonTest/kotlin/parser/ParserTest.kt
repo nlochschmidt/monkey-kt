@@ -130,6 +130,29 @@ class ParserTest {
     }
   }
 
+  @Test
+  fun `operator precedence parsing`() {
+    val testCases = mapOf(
+      "-a * b" to "((-a) * b)",
+      "!-a" to "(!(-a))",
+      "a + b + c" to "((a + b) + c)",
+      "a + b - c" to "((a + b) - c)",
+      "a * b * c" to "((a * b) * c)",
+      "a * b / c" to "((a * b) / c)",
+      "a + b / c" to "(a + (b / c))",
+      "a + b * c + d / e - f" to "(((a + (b * c)) + (d / e)) - f)",
+      "3 + 4; -5 * 5" to "(3 + 4)\n((-5) * 5)",
+      "5 > 4 == 3 < 4" to "((5 > 4) == (3 < 4))",
+      "5 < 4 != 3 > 4" to "((5 < 4) != (3 > 4))",
+      "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"
+    )
+
+    testCases.forEach { (input, expected) ->
+      val programAsString = parseValidProgram(input).toString()
+      assertEquals(expected, programAsString)
+    }
+  }
+
   private fun testInfixExpression(expression: Expression, operator: String): InfixExpression {
     when (expression) {
       is InfixExpression -> {
