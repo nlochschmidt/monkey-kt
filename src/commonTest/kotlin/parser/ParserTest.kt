@@ -1,19 +1,11 @@
 package parser
 
+import ast.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
 import lexer.Lexer
-import ast.Expression
-import ast.ExpressionStatement
-import ast.Program
-import ast.Identifier
-import ast.IntegerLiteral
-import ast.LetStatement
-import ast.PrefixExpression
-import ast.ReturnStatement
-import ast.Statement
 
 class ParserTest {
 
@@ -106,6 +98,46 @@ class ParserTest {
     val expression = getExpression(program.statements.first())
     val prefixExpression = testPrefixExpression(expression, "-")
     testIntegerLiteral(prefixExpression.right, 15)
+  }
+
+  @Test
+  fun `parsing infix expressions`() {
+    data class InfixTestCase(
+      val input: String,
+      val leftValue: Int,
+      val operator: String,
+      val rightValue: Int
+    )
+    val testCases = listOf(
+      InfixTestCase("5 + 5;", 5, "+", 5),
+      InfixTestCase("5 - 5;", 5, "-", 5),
+      InfixTestCase("5 * 5;", 5, "*", 5),
+      InfixTestCase("5 / 5;", 5, "/", 5),
+      InfixTestCase("5 < 5;", 5, "<", 5),
+      InfixTestCase("5 > 5;", 5, ">", 5),
+      InfixTestCase("5 == 5;", 5, "==", 5),
+      InfixTestCase("5 != 5;", 5, "!=", 5)
+    )
+
+    testCases.forEach { (input, leftValue, operator, rightValue) ->
+      val program = parseValidProgram(input)
+      assertEquals(1, program.statements.size)
+
+      val expression = getExpression(program.statements.first())
+      val infixExpression = testInfixExpression(expression, operator)
+      testIntegerLiteral(infixExpression.left, leftValue)
+      testIntegerLiteral(infixExpression.right, rightValue)
+    }
+  }
+
+  private fun testInfixExpression(expression: Expression, operator: String): InfixExpression {
+    when (expression) {
+      is InfixExpression -> {
+        assertEquals(operator, expression.operator)
+        return expression
+      }
+      else -> fail("$expression is not an infix expression")
+    }
   }
 
   private fun parseValidProgram(input: String): Program {

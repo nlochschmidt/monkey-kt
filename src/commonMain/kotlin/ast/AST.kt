@@ -78,3 +78,15 @@ data class PrefixExpression(
 
   override fun toString(): String = "($operator$right)"
 }
+
+data class InfixExpression(
+  val token: Token,
+  val left: Expression,
+  val operator: String,
+  val right: Expression
+): Expression {
+  override val literal: String
+    get() = token.literal
+
+  override fun toString(): String ="($left $operator $right)"
+}

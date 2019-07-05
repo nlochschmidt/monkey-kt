@@ -1,28 +1,11 @@
 package parser
 
+import ast.*
 import lexer.Lexer
-import parser.Precedence.LOWEST
-import parser.Precedence.PREFIX
 import token.Token
 import token.TokenType
-import token.TokenType.ASSIGN
-import token.TokenType.BANG
-import token.TokenType.EOF
-import token.TokenType.IDENT
-import token.TokenType.INT
-import token.TokenType.LET
-import token.TokenType.MINUS
-import token.TokenType.RETURN
-import token.TokenType.SEMICOLON
-import ast.Expression
-import ast.ExpressionStatement
-import ast.Identifier
-import ast.IntegerLiteral
-import ast.LetStatement
-import ast.PrefixExpression
-import ast.Program
-import ast.ReturnStatement
-import ast.Statement
+import parser.Precedence.*
+import token.TokenType.*
 
 typealias PrefixParseFunction = () -> Expression
 typealias InfixParseFunction = (Expression) -> Expression
@@ -40,6 +23,17 @@ enum class Precedence {
   CALL
 }
 
+val precedences= mapOf(
+  EQ to EQUALS,
+  NOT_EQ to EQUALS,
+  LT to LESSGREATER,
+  GT to LESSGREATER,
+  PLUS to SUM,
+  MINUS to SUM,
+  SLASH to PRODUCT,
+  ASTERISK to PRODUCT
+)
+
 class Parser(private val lexer: Lexer) {
   private var currentToken: Token = lexer.nextToken()
   private var peekToken: Token = lexer.nextToken()
@@ -50,7 +44,16 @@ class Parser(private val lexer: Lexer) {
     BANG to ::parsePrefixExpression,
     MINUS to ::parsePrefixExpression
   )
-  val infixParseFunctions = mapOf<TokenType, InfixParseFunction>()
+  val infixParseFunctions = mapOf(
+    EQ to ::parseInfixExpression,
+    NOT_EQ to ::parseInfixExpression,
+    LT to ::parseInfixExpression,
+    GT to ::parseInfixExpression,
+    PLUS to ::parseInfixExpression,
+    MINUS to ::parseInfixExpression,
+    SLASH to ::parseInfixExpression,
+    ASTERISK to ::parseInfixExpression
+  )
 
   private val _errors = mutableListOf<String>()
 
@@ -122,16 +125,19 @@ class Parser(private val lexer: Lexer) {
   }
 
   private fun parseExpression(@Suppress("UNUSED_PARAMETER") precedence: Precedence): Expression {
-    val prefixFunction = prefixParseFunctions.get(currentToken.type) ?: return run {
+    val prefixFunction = prefixParseFunctions[currentToken.type] ?: run {
       _errors.add("No prefix parse function for ${currentToken.type} found")
-      // TODO: Skipping the expresions until we encounter a semicolon
-      while (!currentTokenIs(SEMICOLON)) {
-        nextToken()
-      }
-      UnparsedExpression
+      return UnparsedExpression
     }
+    var leftExpression = prefixFunction()
 
-    val leftExpression = prefixFunction()
+    while (!peekTokenIs(SEMICOLON) && precedence < peekPrecedence()) {
+      val infixFunction = infixParseFunctions[peekToken.type] ?: run {
+        return leftExpression
+      }
+      nextToken()
+      leftExpression = infixFunction(leftExpression)
+    }
 
     return leftExpression
   }
@@ -156,6 +162,14 @@ class Parser(private val lexer: Lexer) {
     return PrefixExpression(prefixToken, prefixToken.literal, parseExpression)
   }
 
+  private fun parseInfixExpression(left: Expression): Expression {
+    val operatorToken = currentToken
+    val precedence = curentPrecedence()
+    nextToken()
+    val right = parseExpression(precedence)
+    return InfixExpression(operatorToken, left, operatorToken.literal, right)
+  }
+
   private fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type
 
   private fun peekTokenIs(type: TokenType): Boolean = peekToken.type == type
@@ -169,6 +183,10 @@ class Parser(private val lexer: Lexer) {
       false
     }
   }
+
+  fun peekPrecedence(): Precedence = precedences[peekToken.type] ?: LOWEST
+
+  fun curentPrecedence(): Precedence = precedences[currentToken.type] ?: LOWEST
 
   private fun peekError(type: TokenType) {
     _errors.add("expected next token to be $type, got ${peekToken.type} instead")
