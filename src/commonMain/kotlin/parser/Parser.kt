@@ -44,7 +44,8 @@ class Parser(private val lexer: Lexer) {
     TRUE to ::parseBooleanLiteral,
     FALSE to ::parseBooleanLiteral,
     BANG to ::parsePrefixExpression,
-    MINUS to ::parsePrefixExpression
+    MINUS to ::parsePrefixExpression,
+    LPAREN to ::parseGroupedExpression
   )
   val infixParseFunctions = mapOf(
     EQ to ::parseInfixExpression,
@@ -174,6 +175,18 @@ class Parser(private val lexer: Lexer) {
     nextToken()
     val right = parseExpression(precedence)
     return InfixExpression(operatorToken, left, operatorToken.literal, right)
+  }
+
+  private fun parseGroupedExpression(): Expression {
+    nextToken()
+
+    val expression = parseExpression(LOWEST)
+
+    if (!expectPeek(RPAREN)) {
+      return UnparsedExpression
+    }
+
+    return expression
   }
 
   private fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type

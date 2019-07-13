@@ -54,8 +54,12 @@ class ParserTest {
 
     val expression = getExpression(program.statements.first())
 
-    when(expression) {
-      is Identifier -> assertEquals("someIdentifier", expression.value)
+    testIdentifier(expression, "someIdentifier")
+  }
+
+  private fun testIdentifier(expression: Expression, identifier: String) {
+    when (expression) {
+      is Identifier -> assertEquals(identifier, expression.value)
       else -> fail("$expression is not an identifier")
     }
   }
@@ -75,7 +79,7 @@ class ParserTest {
     when (expression) {
       is IntegerLiteral -> assertEquals(value, expression.value)
       else -> fail("$expression is not an integer literal")
-      }
+    }
   }
 
   @Test
@@ -97,35 +101,33 @@ class ParserTest {
   }
 
   @Test
-  fun `negate prefix expression`() {
-    val program = parseValidProgram("!5;")
+  fun `parsing prefix expression`() {
 
-    assertEquals(1, program.statements.size)
+    data class PrefixTestCase<T : Any>(val input: String, val operator: String, val value: T)
 
-    val expression = getExpression(program.statements.first())
-    val prefixExpression = testPrefixExpression(expression, "!")
-    testIntegerLiteral(prefixExpression.right, 5)
-  }
+    val testCases = listOf(
+      PrefixTestCase("!5;", "!", 5),
+      PrefixTestCase("-15;", "-", 15),
+      PrefixTestCase("!true;", "!", true),
+      PrefixTestCase("!false;", "!", false)
+    )
 
-  @Test
-  fun `minus prefix expression`() {
-    val program = parseValidProgram("-15;")
-
-    assertEquals(1, program.statements.size)
-
-    val expression = getExpression(program.statements.first())
-    val prefixExpression = testPrefixExpression(expression, "-")
-    testIntegerLiteral(prefixExpression.right, 15)
+    testCases.forEach { (input, operator, value) ->
+      val program = parseValidProgram(input)
+      val expression = getExpression(program.statements.first())
+      testPrefixExpression(expression, operator, value)
+    }
   }
 
   @Test
   fun `parsing infix expressions`() {
-    data class InfixTestCase(
+    data class InfixTestCase<T : Any, U : Any>(
       val input: String,
-      val leftValue: Int,
+      val leftValue: T,
       val operator: String,
-      val rightValue: Int
+      val rightValue: U
     )
+
     val testCases = listOf(
       InfixTestCase("5 + 5;", 5, "+", 5),
       InfixTestCase("5 - 5;", 5, "-", 5),
@@ -134,7 +136,10 @@ class ParserTest {
       InfixTestCase("5 < 5;", 5, "<", 5),
       InfixTestCase("5 > 5;", 5, ">", 5),
       InfixTestCase("5 == 5;", 5, "==", 5),
-      InfixTestCase("5 != 5;", 5, "!=", 5)
+      InfixTestCase("5 != 5;", 5, "!=", 5),
+      InfixTestCase("true == true", true, "==", true),
+      InfixTestCase("true != false", true, "!=", false),
+      InfixTestCase("false == false", false, "==", false)
     )
 
     testCases.forEach { (input, leftValue, operator, rightValue) ->
@@ -142,9 +147,7 @@ class ParserTest {
       assertEquals(1, program.statements.size)
 
       val expression = getExpression(program.statements.first())
-      val infixExpression = testInfixExpression(expression, operator)
-      testIntegerLiteral(infixExpression.left, leftValue)
-      testIntegerLiteral(infixExpression.right, rightValue)
+      testInfixExpression(expression, leftValue, operator, rightValue)
     }
   }
 
@@ -162,7 +165,14 @@ class ParserTest {
       "3 + 4; -5 * 5" to "(3 + 4)\n((-5) * 5)",
       "5 > 4 == 3 < 4" to "((5 > 4) == (3 < 4))",
       "5 < 4 != 3 > 4" to "((5 < 4) != (3 > 4))",
-      "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"
+      "3 + 4 * 5 == 3 * 1 + 4 * 5" to "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+      "3 > 5 == false" to "((3 > 5) == false)",
+      "3 < 5 == true" to "((3 < 5) == true)",
+      "1 + (2 + 3) + 4" to "((1 + (2 + 3)) + 4)",
+      "(5 + 5) * 2" to "((5 + 5) * 2)",
+      "2 / (5 + 5)" to "(2 / (5 + 5))",
+      "-(5 + 5)" to "(-(5 + 5))",
+      "!(true == true)" to "(!(true == true))"
     )
 
     testCases.forEach { (input, expected) ->
@@ -171,10 +181,26 @@ class ParserTest {
     }
   }
 
-  private fun testInfixExpression(expression: Expression, operator: String): InfixExpression {
+  private fun <T : Any> testLiteralExpression(expression: Expression, value: T) {
+    return when (value) {
+      is Int -> testIntegerLiteral(expression, value)
+      is Boolean -> testBooleanLiteral(expression, value)
+      is String -> testIdentifier(expression, value)
+      else -> fail("Unknown type ${value::class.simpleName}")
+    }
+  }
+
+  private fun <T : Any, U : Any> testInfixExpression(
+    expression: Expression,
+    left: T,
+    operator: String,
+    right: U
+  ): InfixExpression {
     when (expression) {
       is InfixExpression -> {
+        testLiteralExpression(expression.left, left)
         assertEquals(operator, expression.operator)
+        testLiteralExpression(expression.right, right)
         return expression
       }
       else -> fail("$expression is not an infix expression")
@@ -191,33 +217,35 @@ class ParserTest {
   }
 
   private fun testLetStatement(statement: Statement, identifier: String) {
-    when(statement) {
+    when (statement) {
       is LetStatement -> assertEquals(identifier, statement.name.value)
       else -> fail("Expected let statement, found ${statement::class.simpleName}")
     }
   }
 
   private fun testReturnStatement(statement: Statement) {
-    when(statement) {
+    when (statement) {
       is ReturnStatement -> Unit
       else -> fail("Expected return statement, found ${statement::class.simpleName}")
     }
   }
 
   private fun getExpression(statement: Statement): Expression {
-    return when(statement) {
+    return when (statement) {
       is ExpressionStatement -> statement.expression
       else -> fail("$statement is not an expression statement")
     }
   }
 
-  private fun testPrefixExpression(
+  private fun <T : Any> testPrefixExpression(
     expression: Expression,
-    operator: String
+    operator: String,
+    value: T
   ): PrefixExpression {
     return when (expression) {
       is PrefixExpression -> {
         assertEquals(operator, expression.operator)
+        testLiteralExpression(expression.right, value)
         expression
       }
       else -> fail("$expression is not a prefix expression")
