@@ -46,7 +46,8 @@ class Parser(private val lexer: Lexer) {
     BANG to ::parsePrefixExpression,
     MINUS to ::parsePrefixExpression,
     LPAREN to ::parseGroupedExpression,
-    IF to ::parseIfExpression
+    IF to ::parseIfExpression,
+    FUNCTION to ::parseFunctionLiteral
   )
   val infixParseFunctions = mapOf(
     EQ to ::parseInfixExpression,
@@ -146,7 +147,7 @@ class Parser(private val lexer: Lexer) {
     return leftExpression
   }
 
-  private fun parseIdentifier(): Expression {
+  private fun parseIdentifier(): Identifier {
     return Identifier(currentToken, currentToken.literal)
   }
 
@@ -228,6 +229,36 @@ class Parser(private val lexer: Lexer) {
     }
 
     return BlockStatement(blockToken, statements.filterNotNull())
+  }
+
+  private fun parseFunctionLiteral(): Expression {
+    val functionLiteral = currentToken
+    if (!expectPeek(LPAREN)) {
+      return UnparsedExpression
+    }
+    val parameters = parseFunctionParameters()
+    if (!expectPeek(LBRACE)) {
+      return UnparsedExpression
+    }
+    return FunctionLiteral(functionLiteral, parameters, parseBlockStatement())
+  }
+
+  private fun parseFunctionParameters(): List<Identifier> {
+    val identifiers = mutableListOf<Identifier>()
+
+    do {
+      nextToken()
+      if (currentTokenIs(RPAREN)) {
+        return identifiers
+      }
+      if (currentTokenIs(COMMA)) {
+        nextToken()
+      }
+      identifiers.add(parseIdentifier())
+    } while((peekTokenIs(COMMA) || peekTokenIs(RPAREN) && !peekTokenIs(EOF)))
+
+    _errors.add("Invalid parameter list")
+    return emptyList()
   }
 
   private fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type

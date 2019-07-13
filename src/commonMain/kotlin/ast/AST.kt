@@ -125,3 +125,14 @@ data class BlockStatement(
 
   override fun toString(): String = statements.joinToString("")
 }
+
+data class FunctionLiteral(
+  val token: Token,
+  val parameters: List<Identifier>,
+  val body: BlockStatement
+) : Expression {
+  override val literal: String
+    get() = token.literal
+
+  override fun toString(): String = "$literal(${parameters.joinToString(", ")}) $body"
+}

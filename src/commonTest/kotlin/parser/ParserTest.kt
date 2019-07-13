@@ -17,9 +17,7 @@ class ParserTest {
       let z = 838383;
     """.trimIndent()
 
-    val program = parseValidProgram(input)
-
-    assertEquals(3, program.statements.size)
+    val program = parseValidProgram(input, expectedStatements = 3)
 
     val expectedIdentifiers = listOf("x", "y", "z")
 
@@ -36,8 +34,7 @@ class ParserTest {
       return 993322;
     """.trimIndent()
 
-    val program = parseValidProgram(input)
-    assertEquals(3, program.statements.size)
+    val program = parseValidProgram(input, expectedStatements = 3)
 
     program.statements.forEach { statement ->
       testReturnStatement(statement)
@@ -49,8 +46,6 @@ class ParserTest {
     val input = "someIdentifier;"
 
     val program = parseValidProgram(input)
-
-    assertEquals(1, program.statements.size)
 
     val expression = getExpression(program.statements.first())
 
@@ -69,7 +64,6 @@ class ParserTest {
     val input = "5;"
 
     val program = parseValidProgram(input)
-    assertEquals(1, program.statements.size)
 
     val expression = getExpression(program.statements.first())
     testIntegerLiteral(expression, 5)
@@ -87,7 +81,6 @@ class ParserTest {
     val input = "true;"
 
     val program = parseValidProgram(input)
-    assertEquals(1, program.statements.size)
 
     val expression = getExpression(program.statements.first())
     testBooleanLiteral(expression, true)
@@ -144,7 +137,6 @@ class ParserTest {
 
     testCases.forEach { (input, leftValue, operator, rightValue) ->
       val program = parseValidProgram(input)
-      assertEquals(1, program.statements.size)
 
       val expression = getExpression(program.statements.first())
       testInfixExpression(expression, leftValue, operator, rightValue)
@@ -176,7 +168,7 @@ class ParserTest {
     )
 
     testCases.forEach { (input, expected) ->
-      val programAsString = parseValidProgram(input).toString()
+      val programAsString = parseValidProgram(input, expectedStatements = null).toString()
       assertEquals(expected, programAsString)
     }
   }
@@ -186,8 +178,6 @@ class ParserTest {
     val input = "if (x < y) { x }"
 
     val program = parseValidProgram(input)
-
-    assertEquals(1, program.statements.size)
 
     val expression = getExpression(program.statements.first())
     when (expression) {
@@ -210,8 +200,6 @@ class ParserTest {
 
     val program = parseValidProgram(input)
 
-    assertEquals(1, program.statements.size)
-
     val expression = getExpression(program.statements.first())
     when (expression) {
       is IfExpression -> {
@@ -222,6 +210,50 @@ class ParserTest {
         assertEquals(1, expression.alternative?.statements?.size)
         val alternativeExpression = getExpression(expression.alternative!!.statements.first())
         testIdentifier(alternativeExpression, "y")
+      }
+    }
+  }
+
+  @Test
+  fun `parse function literal`() {
+    val input = "fn(x, y) { x + y; }"
+
+    val program = parseValidProgram(input)
+
+    val expression = getExpression(program.statements.first())
+
+    when (expression) {
+      is FunctionLiteral -> {
+        assertEquals(2, expression.parameters.size)
+        val (firstCondition, secondCondition) = expression.parameters
+        testLiteralExpression(firstCondition, "x")
+        testLiteralExpression(secondCondition, "y")
+
+        assertEquals(1, expression.body.statements.size)
+        val bodyExpression = getExpression(expression.body.statements.first())
+
+        testInfixExpression(bodyExpression, "x", "+", "y")
+      }
+      else -> fail("$expression is not a function literal")
+    }
+  }
+
+  @Test
+  fun `parse function parameters`() {
+    val testCases = mapOf(
+      "fn() {};" to emptyList(),
+      "fn(x) {};" to listOf("x"),
+      "fn(x, y, z) {};" to listOf("x", "y", "z")
+    )
+
+    testCases.forEach { (input, expectedParameters) ->
+      val program = parseValidProgram(input)
+      val expression = getExpression(program.statements.first())
+      when (expression) {
+        is FunctionLiteral -> {
+          assertEquals(expectedParameters, expression.parameters.map { it.value })
+        }
+        else -> fail("$expression is not a function literal")
       }
     }
   }
@@ -252,12 +284,15 @@ class ParserTest {
     }
   }
 
-  private fun parseValidProgram(input: String): Program {
+  private fun parseValidProgram(input: String, expectedStatements: Int? = 1): Program {
     val lexer = Lexer(input)
     val parser = Parser(lexer)
 
     val program = parser.parseProgram()
     checkParseErrors(parser)
+    if (expectedStatements != null) {
+      assertEquals(expectedStatements, program.statements.size)
+    }
     return program
   }
 
