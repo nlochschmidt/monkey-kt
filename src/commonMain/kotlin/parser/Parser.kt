@@ -23,7 +23,7 @@ enum class Precedence {
   CALL
 }
 
-val precedences= mapOf(
+val precedences = mapOf(
   EQ to EQUALS,
   NOT_EQ to EQUALS,
   LT to LESSGREATER,
@@ -49,7 +49,7 @@ class Parser(private val lexer: Lexer) {
     IF to ::parseIfExpression,
     FUNCTION to ::parseFunctionLiteral
   )
-  val infixParseFunctions = mapOf(
+  private val infixParseFunctions = mapOf<TokenType, InfixParseFunction>(
     EQ to ::parseInfixExpression,
     NOT_EQ to ::parseInfixExpression,
     LT to ::parseInfixExpression,
@@ -82,7 +82,7 @@ class Parser(private val lexer: Lexer) {
   }
 
   private fun parseStatement(): Statement? {
-    return when(currentToken.type) {
+    return when (currentToken.type) {
       LET -> parseLetStatement()
       RETURN -> parseReturnStatement()
       else -> parseExpressionStatement()
@@ -161,7 +161,7 @@ class Parser(private val lexer: Lexer) {
   }
 
   private fun parseBooleanLiteral(): Expression {
-    return BooleanLiteral(currentToken,  currentTokenIs(TRUE))
+    return BooleanLiteral(currentToken, currentTokenIs(TRUE))
   }
 
   private fun parsePrefixExpression(): Expression {
@@ -173,7 +173,7 @@ class Parser(private val lexer: Lexer) {
 
   private fun parseInfixExpression(left: Expression): Expression {
     val operatorToken = currentToken
-    val precedence = curentPrecedence()
+    val precedence = currentPrecedence()
     nextToken()
     val right = parseExpression(precedence)
     return InfixExpression(operatorToken, left, operatorToken.literal, right)
@@ -223,7 +223,7 @@ class Parser(private val lexer: Lexer) {
     val statements = mutableListOf<Statement?>()
     nextToken()
 
-    while(!currentTokenIs(RBRACE) && !currentTokenIs(EOF)) {
+    while (!currentTokenIs(RBRACE) && !currentTokenIs(EOF)) {
       statements.add(parseStatement())
       nextToken()
     }
@@ -255,7 +255,7 @@ class Parser(private val lexer: Lexer) {
         nextToken()
       }
       identifiers.add(parseIdentifier())
-    } while((peekTokenIs(COMMA) || peekTokenIs(RPAREN) && !peekTokenIs(EOF)))
+    } while ((peekTokenIs(COMMA) || peekTokenIs(RPAREN) && !peekTokenIs(EOF)))
 
     _errors.add("Invalid parameter list")
     return emptyList()
@@ -275,15 +275,15 @@ class Parser(private val lexer: Lexer) {
     }
   }
 
-  fun peekPrecedence(): Precedence = precedences[peekToken.type] ?: LOWEST
+  private fun peekPrecedence(): Precedence = precedences[peekToken.type] ?: LOWEST
 
-  fun curentPrecedence(): Precedence = precedences[currentToken.type] ?: LOWEST
+  private fun currentPrecedence(): Precedence = precedences[currentToken.type] ?: LOWEST
 
   private fun peekError(type: TokenType) {
     _errors.add("expected next token to be $type, got ${peekToken.type} instead")
   }
 
   object UnparsedExpression : Expression {
-    override val literal: String = "Not parsed"
+    override val token: Token = Token(FALSE, "Not parsed")
   }
 }

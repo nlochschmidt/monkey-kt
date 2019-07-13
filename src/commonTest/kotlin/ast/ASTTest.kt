@@ -1,4 +1,5 @@
 package ast
+
 import token.Token
 import token.TokenType.IDENT
 import token.TokenType.LET
@@ -8,7 +9,7 @@ import kotlin.test.assertEquals
 class ASTTest {
 
   @Test
-  fun `AST to string`(){
+  fun `AST to string`() {
     val program = Program(
       statements = listOf(
         LetStatement(

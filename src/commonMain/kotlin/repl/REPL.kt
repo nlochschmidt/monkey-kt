@@ -8,7 +8,7 @@ class REPL {
   fun start(readLine: () -> String?, write: (String) -> Unit) {
     while (true) {
       write(PROMPT)
-      val line = readLine().takeIf { it != ""} ?: return
+      val line = readLine().takeIf { it != "" } ?: return
       val lexer = Lexer(line)
       var token = lexer.nextToken()
       while (token.type != EOF) {

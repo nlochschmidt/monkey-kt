@@ -49,13 +49,13 @@ class Lexer(private val input: String) {
       '}' -> Token(RBRACE, "$currentChar")
       NULL -> Token(EOF, "")
       else -> {
-        if (currentChar.isLetter()) {
-          val identifier = readIdentifier()
-          return lookupIdentifierToken(identifier)
-        } else if (currentChar.isDigit()) {
-          return Token(INT, readNumber())
-        } else {
-          Token(ILLEGAL, "$currentChar")
+        when {
+          currentChar.isLetter() -> {
+            val identifier = readIdentifier()
+            return lookupIdentifierToken(identifier)
+          }
+          currentChar.isDigit() -> return Token(INT, readNumber())
+          else -> Token(ILLEGAL, "$currentChar")
         }
       }
     }
@@ -65,7 +65,7 @@ class Lexer(private val input: String) {
 
   private fun readIdentifier(): String {
     val startPosition = position
-    while(currentChar.isLetter() || currentChar == '_') {
+    while (currentChar.isLetter() || currentChar == '_') {
       readChar()
     }
     return input.substring(startPosition, position)
@@ -113,7 +113,7 @@ class Lexer(private val input: String) {
   companion object {
     const val NULL: Char = '\u0000'
 
-    val KEYWORDS : Map<String, TokenType>  = mapOf(
+    val KEYWORDS: Map<String, TokenType> = mapOf(
       "fn" to FUNCTION,
       "let" to LET,
       "true" to TRUE,
@@ -121,6 +121,6 @@ class Lexer(private val input: String) {
       "if" to IF,
       "else" to ELSE,
       "return" to RETURN
-      )
+    )
   }
 }
