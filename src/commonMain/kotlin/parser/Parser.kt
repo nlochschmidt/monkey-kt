@@ -45,7 +45,8 @@ class Parser(private val lexer: Lexer) {
     FALSE to ::parseBooleanLiteral,
     BANG to ::parsePrefixExpression,
     MINUS to ::parsePrefixExpression,
-    LPAREN to ::parseGroupedExpression
+    LPAREN to ::parseGroupedExpression,
+    IF to ::parseIfExpression
   )
   val infixParseFunctions = mapOf(
     EQ to ::parseInfixExpression,
@@ -187,6 +188,46 @@ class Parser(private val lexer: Lexer) {
     }
 
     return expression
+  }
+
+  private fun parseIfExpression(): Expression {
+    val ifToken = currentToken
+    if (!expectPeek(LPAREN)) {
+      return UnparsedExpression
+    }
+    nextToken()
+    val condition = parseExpression(LOWEST)
+    if (!expectPeek(RPAREN)) {
+      return UnparsedExpression
+    }
+    if (!expectPeek(LBRACE)) {
+      return UnparsedExpression
+    }
+
+    val consequence = parseBlockStatement()
+    val alternative = if (peekTokenIs(ELSE)) {
+      nextToken()
+      if (!expectPeek(LBRACE)) {
+        return UnparsedExpression
+      }
+      parseBlockStatement()
+    } else {
+      null
+    }
+    return IfExpression(ifToken, condition, consequence, alternative)
+  }
+
+  private fun parseBlockStatement(): BlockStatement {
+    val blockToken = currentToken
+    val statements = mutableListOf<Statement?>()
+    nextToken()
+
+    while(!currentTokenIs(RBRACE) && !currentTokenIs(EOF)) {
+      statements.add(parseStatement())
+      nextToken()
+    }
+
+    return BlockStatement(blockToken, statements.filterNotNull())
   }
 
   private fun currentTokenIs(type: TokenType): Boolean = currentToken.type == type

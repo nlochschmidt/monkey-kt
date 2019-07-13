@@ -100,3 +100,28 @@ data class InfixExpression(
 
   override fun toString(): String ="($left $operator $right)"
 }
+
+data class IfExpression(
+  val token: Token,
+  val condition: Expression,
+  val consequence: BlockStatement,
+  val alternative: BlockStatement?
+): Expression {
+  override val literal: String
+    get() = token.literal
+
+  override fun toString(): String {
+    val elseString = alternative?.let { "else $it"} ?: ""
+    return "if $condition $consequence$elseString"
+  }
+}
+
+data class BlockStatement(
+  val token: Token,
+  val statements: List<Statement>
+) : Statement {
+  override val literal: String
+    get() = token.literal
+
+  override fun toString(): String = statements.joinToString("")
+}

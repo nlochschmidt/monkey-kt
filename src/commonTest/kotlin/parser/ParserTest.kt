@@ -181,6 +181,51 @@ class ParserTest {
     }
   }
 
+  @Test
+  fun `parse If expressions`() {
+    val input = "if (x < y) { x }"
+
+    val program = parseValidProgram(input)
+
+    assertEquals(1, program.statements.size)
+
+    val expression = getExpression(program.statements.first())
+    when (expression) {
+      is IfExpression -> {
+        testInfixExpression(expression.condition, "x", "<", "y")
+        assertEquals(1, expression.consequence.statements.size)
+        val consequenceExpression = getExpression(expression.consequence.statements.first())
+        testIdentifier(consequenceExpression, "x")
+
+        if (expression.alternative != null) {
+          fail("alternative was not null")
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `parse If Else expressions`() {
+    val input = "if (x < y) { x } else { y }"
+
+    val program = parseValidProgram(input)
+
+    assertEquals(1, program.statements.size)
+
+    val expression = getExpression(program.statements.first())
+    when (expression) {
+      is IfExpression -> {
+        testInfixExpression(expression.condition, "x", "<", "y")
+        assertEquals(1, expression.consequence.statements.size)
+        val consequenceExpression = getExpression(expression.consequence.statements.first())
+        testIdentifier(consequenceExpression, "x")
+        assertEquals(1, expression.alternative?.statements?.size)
+        val alternativeExpression = getExpression(expression.alternative!!.statements.first())
+        testIdentifier(alternativeExpression, "y")
+      }
+    }
+  }
+
   private fun <T : Any> testLiteralExpression(expression: Expression, value: T) {
     return when (value) {
       is Int -> testIntegerLiteral(expression, value)
@@ -251,7 +296,6 @@ class ParserTest {
       else -> fail("$expression is not a prefix expression")
     }
   }
-
 
   private fun checkParseErrors(parser: Parser) {
     if (parser.errors.isEmpty()) return
