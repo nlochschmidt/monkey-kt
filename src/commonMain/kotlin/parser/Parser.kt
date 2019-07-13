@@ -41,6 +41,8 @@ class Parser(private val lexer: Lexer) {
   private val prefixParseFunctions = mapOf<TokenType, PrefixParseFunction>(
     IDENT to ::parseIdentifier,
     INT to ::parseIntegerLiteral,
+    TRUE to ::parseBooleanLiteral,
+    FALSE to ::parseBooleanLiteral,
     BANG to ::parsePrefixExpression,
     MINUS to ::parsePrefixExpression
   )
@@ -153,6 +155,10 @@ class Parser(private val lexer: Lexer) {
       return UnparsedExpression
     }
     return IntegerLiteral(currentToken, value)
+  }
+
+  private fun parseBooleanLiteral(): Expression {
+    return BooleanLiteral(currentToken,  currentTokenIs(TRUE))
   }
 
   private fun parsePrefixExpression(): Expression {

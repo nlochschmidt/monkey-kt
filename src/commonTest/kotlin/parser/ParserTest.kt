@@ -79,6 +79,24 @@ class ParserTest {
   }
 
   @Test
+  fun `boolean expression`() {
+    val input = "true;"
+
+    val program = parseValidProgram(input)
+    assertEquals(1, program.statements.size)
+
+    val expression = getExpression(program.statements.first())
+    testBooleanLiteral(expression, true)
+  }
+
+  private fun testBooleanLiteral(expression: Expression, value: Boolean) {
+    when (expression) {
+      is BooleanLiteral -> assertEquals(value, expression.value)
+      else -> fail("$expression is not an integer literal")
+    }
+  }
+
+  @Test
   fun `negate prefix expression`() {
     val program = parseValidProgram("!5;")
 
