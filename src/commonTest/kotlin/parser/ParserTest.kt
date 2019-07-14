@@ -164,7 +164,10 @@ class ParserTest {
       "(5 + 5) * 2" to "((5 + 5) * 2)",
       "2 / (5 + 5)" to "(2 / (5 + 5))",
       "-(5 + 5)" to "(-(5 + 5))",
-      "!(true == true)" to "(!(true == true))"
+      "!(true == true)" to "(!(true == true))",
+      "a + add(b * c) + d" to "((a + add((b * c))) + d)",
+      "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))" to "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+      "add(a + b + c * d / f + g)" to "add((((a + b) + ((c * d) / f)) + g))"
     )
 
     testCases.forEach { (input, expected) ->
@@ -254,6 +257,46 @@ class ParserTest {
           assertEquals(expectedParameters, expression.parameters.map { it.value })
         }
         else -> fail("$expression is not a function literal")
+      }
+    }
+  }
+
+  @Test
+  fun `parse call expression`() {
+    val input = "add(1, 2 * 3, 4 + 5);"
+
+    val program = parseValidProgram(input)
+    val expression = getExpression(program.statements.first())
+
+    when (expression) {
+      is CallExpression -> {
+        testIdentifier(expression.function, "add")
+        assertEquals(3, expression.arguments.size)
+        val (firstArgument, secondArgument, thirdArgument) = expression.arguments
+        testLiteralExpression(firstArgument, 1)
+        testInfixExpression(secondArgument, 2, "*", 3)
+        testInfixExpression(thirdArgument, 4, "+", 5)
+      }
+      else -> fail("$expression is not a call expression")
+    }
+  }
+
+  @Test
+  fun `parse call arguments`() {
+    val testCases = mapOf(
+      "add();" to emptyList(),
+      "add(x);" to listOf("x"),
+      "add(x, y, z);" to listOf("x", "y", "z")
+    )
+
+    testCases.forEach { (input, expectedArguments) ->
+      val program = parseValidProgram(input)
+      val expression = getExpression(program.statements.first())
+      when (expression) {
+        is CallExpression -> {
+          assertEquals(expectedArguments, expression.arguments.map { (it as Identifier).value })
+        }
+        else -> fail("$expression is not a call expression")
       }
     }
   }

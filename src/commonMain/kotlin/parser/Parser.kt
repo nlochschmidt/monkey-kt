@@ -31,7 +31,8 @@ val precedences = mapOf(
   PLUS to SUM,
   MINUS to SUM,
   SLASH to PRODUCT,
-  ASTERISK to PRODUCT
+  ASTERISK to PRODUCT,
+  LPAREN to CALL
 )
 
 class Parser(private val lexer: Lexer) {
@@ -57,7 +58,8 @@ class Parser(private val lexer: Lexer) {
     PLUS to ::parseInfixExpression,
     MINUS to ::parseInfixExpression,
     SLASH to ::parseInfixExpression,
-    ASTERISK to ::parseInfixExpression
+    ASTERISK to ::parseInfixExpression,
+    LPAREN to ::parseCallExpression
   )
 
   private val _errors = mutableListOf<String>()
@@ -258,6 +260,28 @@ class Parser(private val lexer: Lexer) {
     } while ((peekTokenIs(COMMA) || peekTokenIs(RPAREN) && !peekTokenIs(EOF)))
 
     _errors.add("Invalid parameter list")
+    return emptyList()
+  }
+
+  private fun parseCallExpression(function: Expression): Expression {
+    return CallExpression(currentToken, function, parseCallArguments())
+  }
+
+  private fun parseCallArguments(): List<Expression> {
+    val arguments = mutableListOf<Expression>()
+
+    do {
+      nextToken()
+      if (currentTokenIs(RPAREN)) {
+        return arguments
+      }
+      if (currentTokenIs(COMMA)) {
+        nextToken()
+      }
+      arguments.add(parseExpression(LOWEST))
+    } while ((peekTokenIs(COMMA) || peekTokenIs(RPAREN) && !peekTokenIs(EOF)))
+
+    _errors.add("Invalid call argument list")
     return emptyList()
   }
 
