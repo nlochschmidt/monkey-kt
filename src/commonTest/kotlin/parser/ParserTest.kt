@@ -11,33 +11,32 @@ class ParserTest {
 
   @Test
   fun `let statements`() {
-    val input = """
-      let x = 5;
-      let y = 10;
-      let z = 838383;
-    """.trimIndent()
+    data class LetTestCase<T>(val input: String, val expectedIdentifier: String, val expectedValue: T)
+    val testCases = listOf(
+      LetTestCase("let x = 5;", "x", 5),
+      LetTestCase("let y = true;", "y", true),
+      LetTestCase("let z = y;", "z", "y")
+    )
 
-    val program = parseValidProgram(input, expectedStatements = 3)
-
-    val expectedIdentifiers = listOf("x", "y", "z")
-
-    program.statements.zip(expectedIdentifiers).forEach { (statement, identifier) ->
-      testLetStatement(statement, identifier)
+    testCases.forEach { (input, expectedIdentifier, expectedValue) ->
+      val program = parseValidProgram(input)
+      val letStatement = testLetStatement(program.statements.first(), expectedIdentifier)
+      testLiteralExpression(letStatement.value, expectedValue)
     }
   }
 
   @Test
   fun `return statements`() {
-    val input = """
-      return 5;
-      return 10;
-      return 993322;
-    """.trimIndent()
+    data class ReturnTestCase<T>(val input: String, val expectedValue: T)
+    val testCases = listOf(
+      ReturnTestCase("return 5;", 5),
+      ReturnTestCase("return true;", true),
+      ReturnTestCase("return x", "x")
+    )
 
-    val program = parseValidProgram(input, expectedStatements = 3)
-
-    program.statements.forEach { statement ->
-      testReturnStatement(statement)
+    testCases.forEach { (input, expectedValue) ->
+      val program = parseValidProgram(input)
+      testReturnStatement(program.statements.first(), expectedValue)
     }
   }
 
@@ -339,16 +338,19 @@ class ParserTest {
     return program
   }
 
-  private fun testLetStatement(statement: Statement, identifier: String) {
-    when (statement) {
-      is LetStatement -> assertEquals(identifier, statement.name.value)
+  private fun testLetStatement(statement: Statement, identifier: String): LetStatement {
+    return when (statement) {
+      is LetStatement -> {
+        assertEquals(identifier, statement.name.value)
+        statement
+      }
       else -> fail("Expected let statement, found ${statement::class.simpleName}")
     }
   }
 
-  private fun testReturnStatement(statement: Statement) {
+  private fun <T: Any> testReturnStatement(statement: Statement, expectedValue: T) {
     when (statement) {
-      is ReturnStatement -> Unit
+      is ReturnStatement -> testLiteralExpression(statement.returnValue, expectedValue)
       else -> fail("Expected return statement, found ${statement::class.simpleName}")
     }
   }
