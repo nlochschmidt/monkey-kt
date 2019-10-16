@@ -8,7 +8,7 @@ interface Object {
 
 // FIXME: I might be able to get away without the ObjectType. Let's see
 
-data class Integer(val value: Long) : Object {
+data class Integer(val value: Int) : Object {
   override val type: ObjectType = INTEGER
 
   override fun toString(): String = value.toString()

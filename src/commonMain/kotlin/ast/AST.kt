@@ -1,6 +1,7 @@
 package ast
 
 import token.Token
+import token.TokenType
 
 interface Node {
   val token: Token
@@ -11,7 +12,8 @@ interface Statement : Node
 
 interface Expression : Node
 
-data class Program(val statements: List<Statement>) {
+data class Program(val statements: List<Statement>): Node {
+  override val token: Token = Token(TokenType.EOF, "")
   override fun toString(): String = statements.joinToString("\n")
 }
 
