@@ -16,6 +16,11 @@ fun eval(node: Node): Object {
     is IntegerLiteral -> Integer(node.value)
     is BooleanLiteral -> node.nativeBooleanToBoolObject()
     is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
+    is InfixExpression -> {
+      val left = eval(node.left)
+      val right = eval(node.right)
+      evalInfixExpression(node.operator, left, right)
+    }
     else -> Null
   }
 }
@@ -40,6 +45,23 @@ fun evalBangOperatorExpression(right: Object): Object {
 fun evalMinusPrefixOperatorExpression(right: Object): Object {
   return when (right) {
     is Integer -> Integer(-right.value)
+    else -> Null
+  }
+}
+
+fun evalInfixExpression(operator: String, left: Object, right: Object): Object {
+  return when {
+    left is Integer && right is Integer -> evalIntegerInfixExpression(operator, left, right)
+    else -> Null
+  }
+}
+
+fun evalIntegerInfixExpression(operator: String, left: Integer, right: Integer): Object {
+  return when (operator) {
+    "+" -> Integer(left.value + right.value)
+    "-" -> Integer(left.value - right.value)
+    "*" -> Integer(left.value * right.value)
+    "/" -> Integer(left.value / right.value)
     else -> Null
   }
 }

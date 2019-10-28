@@ -16,7 +16,18 @@ class EvalTest {
      "5" to Integer(5),
      "10" to Integer(10),
      "-5" to Integer(-5),
-     "-10" to Integer(-10))
+     "-10" to Integer(-10),
+     "5 + 5 + 5 + 5 - 10" to Integer(10),
+     "2 * 2 * 2 * 2 * 2" to Integer(32),
+     "-50 + 100 + -50" to Integer(0),
+     "5 * 2 + 10" to Integer(20),
+     "5 + 2 * 10" to Integer(25),
+     "20 + 2 * -10" to Integer(0),
+     "50 / 2 * 2 + 10" to Integer(60),
+     "2 * (5 + 10)" to Integer(30),
+     "3 * 3 * 3 + 10" to Integer(37),
+     "3 * (3 * 3) + 10" to Integer(37),
+     "(5 + 10 * 2 + 15 / 3) * 2 + -10" to Integer(50))
 
     testCases.forEach { (input, expected) ->
       assertEquals(expected, testEval(input))
