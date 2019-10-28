@@ -1,5 +1,6 @@
 package repl
 
+import evaluator.eval
 import lexer.Lexer
 import parser.Parser
 import token.TokenType.EOF
@@ -17,7 +18,8 @@ class REPL {
         printParseErrors(write, parser.errors)
         continue
       }
-      write(program.toString())
+      val result = eval(program)
+      write(result.toString())
       write("\n")
     }
   }
