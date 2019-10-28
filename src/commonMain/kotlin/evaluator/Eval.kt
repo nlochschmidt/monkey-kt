@@ -23,6 +23,7 @@ fun eval(node: Node): Object {
 fun evalPrefixExpression(operator: String, right: Object): Object {
   return when (operator) {
     "!" -> evalBangOperatorExpression(right)
+    "-" -> evalMinusPrefixOperatorExpression(right)
     else -> Null
   }
 }
@@ -33,6 +34,13 @@ fun evalBangOperatorExpression(right: Object): Object {
     FALSE -> TRUE
     Null -> TRUE
     else -> FALSE
+  }
+}
+
+fun evalMinusPrefixOperatorExpression(right: Object): Object {
+  return when (right) {
+    is Integer -> Integer(-right.value)
+    else -> Null
   }
 }
 

@@ -14,7 +14,9 @@ class EvalTest {
   fun `test eval integer expression`() {
    val testCases = listOf(
      "5" to Integer(5),
-     "10" to Integer(10))
+     "10" to Integer(10),
+     "-5" to Integer(-5),
+     "-10" to Integer(-10))
 
     testCases.forEach { (input, expected) ->
       assertEquals(expected, testEval(input))
