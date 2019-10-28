@@ -15,7 +15,24 @@ fun eval(node: Node): Object {
     is ExpressionStatement -> eval(node.expression)
     is IntegerLiteral -> Integer(node.value)
     is BooleanLiteral -> node.nativeBooleanToBoolObject()
+    is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
     else -> Null
+  }
+}
+
+fun evalPrefixExpression(operator: String, right: Object): Object {
+  return when (operator) {
+    "!" -> evalBangOperatorExpression(right)
+    else -> Null
+  }
+}
+
+fun evalBangOperatorExpression(right: Object): Object {
+  return when (right) {
+    TRUE -> FALSE
+    FALSE -> TRUE
+    Null -> TRUE
+    else -> FALSE
   }
 }
 

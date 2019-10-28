@@ -33,6 +33,23 @@ class EvalTest {
     }
   }
 
+  @Test
+  fun `test bang operator`() {
+    val testCases = listOf(
+      "!true" to Bool(false),
+      "!false" to Bool(true),
+      "!5" to Bool(false),
+      "!!true" to Bool(true),
+      "!!false" to Bool(false),
+      "!!5" to Bool(true)
+    )
+
+    testCases.forEach { (input, expected) ->
+      val result = testEval(input)
+      assertEquals(expected, result, "evaluating $input was not equal to $expected")
+    }
+  }
+
   private fun testEval(input: String): Object {
     val program = Parser(Lexer(input)).parseProgram()
     return eval(program)
