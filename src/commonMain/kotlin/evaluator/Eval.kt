@@ -1,5 +1,6 @@
 package evaluator
 
+import `object`.Bool
 import `object`.Integer
 import `object`.Null
 import `object`.Object
@@ -10,6 +11,7 @@ fun eval(node: Node): Object {
     is Program -> evalStatements(node.statements)
     is ExpressionStatement -> eval(node.expression)
     is IntegerLiteral -> Integer(node.value)
+    is BooleanLiteral -> Bool(node.value)
     else -> Null
   }
 }

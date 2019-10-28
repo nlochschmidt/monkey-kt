@@ -1,5 +1,6 @@
 package evaluator
 
+import `object`.Bool
 import `object`.Integer
 import `object`.Object
 import lexer.Lexer
@@ -14,6 +15,18 @@ class EvalTest {
    val testCases = listOf(
      "5" to Integer(5),
      "10" to Integer(10))
+
+    testCases.forEach { (input, expected) ->
+      assertEquals(expected, testEval(input))
+    }
+  }
+
+  @Test
+  fun `test eval bool expression`() {
+    val testCases = listOf(
+      "true" to Bool(true),
+      "false" to Bool(false)
+    )
 
     testCases.forEach { (input, expected) ->
       assertEquals(expected, testEval(input))
