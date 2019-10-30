@@ -103,7 +103,16 @@ class EvalTest {
       "return 10;" to Integer(10),
       "return 10; 9;" to Integer(10),
       "return 2 * 5; 9;" to Integer(10),
-      "9; return 2 * 5; 9;" to Integer(10)
+      "9; return 2 * 5; 9;" to Integer(10),
+      """
+      if (10 > 1) {
+        if (10 > 1) {
+          return 10;
+        }
+
+        return 1;
+      }
+      """.trimIndent() to Integer(10)
     )
 
     testCases.forEach { (input, expected) ->

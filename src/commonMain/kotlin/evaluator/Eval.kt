@@ -7,7 +7,7 @@ import ast.*
 
 fun eval(node: Node): Object {
   return when(node) {
-    is Program -> evalStatements(node.statements)
+    is Program -> evalProgram(node)
     is ExpressionStatement -> eval(node.expression)
     is IntegerLiteral -> Integer(node.value)
     is BooleanLiteral -> Bool(node.value)
@@ -17,7 +17,7 @@ fun eval(node: Node): Object {
       val right = eval(node.right)
       evalInfixExpression(node.operator, left, right)
     }
-    is BlockStatement -> evalStatements(node.statements)
+    is BlockStatement -> evalBlockStatement(node)
     is IfExpression -> evalIfExpression(node)
     is ReturnStatement -> ReturnValue(eval(node.returnValue))
     else -> Null
@@ -84,11 +84,20 @@ fun isTruthy(condition: Object): Boolean {
   return !(condition == Null || condition == FALSE)
 }
 
-fun evalStatements(statements: List<Statement>): Object {
-  return statements.fold<Statement, Object>(Null) { _, statement ->
+fun evalProgram(program: Program): Object {
+  return program.statements.fold<Statement, Object>(Null) { _, statement ->
     when (val result = eval(statement)) {
         is ReturnValue -> return result.value
         else -> result
+    }
+  }
+}
+
+fun evalBlockStatement(block: BlockStatement): Object {
+  return block.statements.fold<Statement, Object>(Null) { _, statement ->
+    when (val result = eval(statement)) {
+      is ReturnValue -> return result
+      else -> result
     }
   }
 }
