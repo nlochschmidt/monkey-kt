@@ -2,6 +2,7 @@ package evaluator
 
 import `object`.Bool
 import `object`.Integer
+import `object`.Null
 import `object`.Object
 import lexer.Lexer
 import parser.Parser
@@ -30,7 +31,7 @@ class EvalTest {
      "(5 + 10 * 2 + 15 / 3) * 2 + -10" to Integer(50))
 
     testCases.forEach { (input, expected) ->
-      assertEquals(expected, testEval(input))
+      assertEquals(expected, testEval(input), "evaluating $input failed")
     }
   }
 
@@ -59,7 +60,7 @@ class EvalTest {
     )
 
     testCases.forEach { (input, expected) ->
-      assertEquals(expected, testEval(input))
+      assertEquals(expected, testEval(input), "evaluating $input failed")
     }
   }
 
@@ -75,8 +76,24 @@ class EvalTest {
     )
 
     testCases.forEach { (input, expected) ->
-      val result = testEval(input)
-      assertEquals(expected, result, "evaluating $input was not equal to $expected")
+      assertEquals(expected, testEval(input), "evaluating $input failed")
+    }
+  }
+
+  @Test
+  fun `test if else expressions`() {
+    val testCases = listOf(
+      "if (true) { 10 }" to Integer(10),
+      "if (false) { 10 }" to Null,
+      "if (1) { 10 }" to Integer(10),
+      "if (1 < 2) { 10 }" to Integer(10),
+      "if (1 > 2) { 10 }" to Null,
+      "if (1 > 2) { 10 } else { 20 }" to Integer(20),
+      "if (1 < 2) { 10 } else { 20 }" to Integer(10)
+    )
+
+    testCases.forEach { (input, expected) ->
+      assertEquals(expected, testEval(input), "evaluating $input failed")
     }
   }
 
