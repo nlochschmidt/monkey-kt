@@ -14,10 +14,19 @@ data class Integer(val value: Int) : Object {
   override fun toString(): String = value.toString()
 }
 
-data class Bool(val value: Boolean): Object {
+class Bool private constructor (val value: Boolean): Object {
   override val type: ObjectType = BOOLEAN
 
   override fun toString(): String = value.toString()
+
+  companion object {
+    val TRUE = Bool(true)
+    val FALSE = Bool(false)
+
+    operator fun invoke(value: Boolean): Bool {
+      return if (value) TRUE else FALSE
+    }
+  }
 }
 
 object Null : Object {

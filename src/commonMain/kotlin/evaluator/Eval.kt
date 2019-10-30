@@ -1,20 +1,19 @@
 package evaluator
 
 import `object`.Bool
+import `object`.Bool.Companion.FALSE
+import `object`.Bool.Companion.TRUE
 import `object`.Integer
 import `object`.Null
 import `object`.Object
 import ast.*
-
-val TRUE = Bool(true)
-val FALSE = Bool(false)
 
 fun eval(node: Node): Object {
   return when(node) {
     is Program -> evalStatements(node.statements)
     is ExpressionStatement -> eval(node.expression)
     is IntegerLiteral -> Integer(node.value)
-    is BooleanLiteral -> node.nativeBooleanToBoolObject()
+    is BooleanLiteral -> Bool(node.value)
     is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
     is InfixExpression -> {
       val left = eval(node.left)
@@ -62,6 +61,10 @@ fun evalIntegerInfixExpression(operator: String, left: Integer, right: Integer):
     "-" -> Integer(left.value - right.value)
     "*" -> Integer(left.value * right.value)
     "/" -> Integer(left.value / right.value)
+    "<" -> Bool(left.value < right.value)
+    ">" -> Bool(left.value > right.value)
+    "==" -> Bool(left.value == right.value)
+    "!=" -> Bool(left.value != right.value)
     else -> Null
   }
 }
@@ -69,6 +72,3 @@ fun evalIntegerInfixExpression(operator: String, left: Integer, right: Integer):
 fun evalStatements(statements: List<Statement>): Object {
   return statements.fold(Null) { _: Object, statement -> eval(statement) }
 }
-
-private fun BooleanLiteral.nativeBooleanToBoolObject() =
-  if (value) TRUE else FALSE

@@ -38,7 +38,15 @@ class EvalTest {
   fun `test eval bool expression`() {
     val testCases = listOf(
       "true" to Bool(true),
-      "false" to Bool(false)
+      "false" to Bool(false),
+      "1 < 2" to Bool(true),
+      "1 > 2" to Bool(false),
+      "1 < 1" to Bool(false),
+      "1 > 1" to Bool(false),
+      "1 == 1" to Bool(true),
+      "1 != 1" to Bool(false),
+      "1 == 2" to Bool(false),
+      "1 != 2" to Bool(true)
     )
 
     testCases.forEach { (input, expected) ->
