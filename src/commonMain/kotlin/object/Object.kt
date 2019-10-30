@@ -35,3 +35,9 @@ object Null : Object {
 
   override fun toString(): String = "null"
 }
+
+data class ReturnValue(val value: Object) : Object {
+  override val type: ObjectType = RETURN_VALUE
+
+  override fun toString(): String = value.toString()
+}

@@ -1,11 +1,8 @@
 package evaluator
 
-import `object`.Bool
+import `object`.*
 import `object`.Bool.Companion.FALSE
 import `object`.Bool.Companion.TRUE
-import `object`.Integer
-import `object`.Null
-import `object`.Object
 import ast.*
 
 fun eval(node: Node): Object {
@@ -22,6 +19,7 @@ fun eval(node: Node): Object {
     }
     is BlockStatement -> evalStatements(node.statements)
     is IfExpression -> evalIfExpression(node)
+    is ReturnStatement -> ReturnValue(eval(node.returnValue))
     else -> Null
   }
 }
@@ -87,5 +85,10 @@ fun isTruthy(condition: Object): Boolean {
 }
 
 fun evalStatements(statements: List<Statement>): Object {
-  return statements.fold(Null) { _: Object, statement -> eval(statement) }
+  return statements.fold<Statement, Object>(Null) { _, statement ->
+    when (val result = eval(statement)) {
+        is ReturnValue -> return result.value
+        else -> result
+    }
+  }
 }

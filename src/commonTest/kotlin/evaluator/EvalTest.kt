@@ -97,6 +97,20 @@ class EvalTest {
     }
   }
 
+  @Test
+  fun `test return statements`() {
+    val testCases = listOf(
+      "return 10;" to Integer(10),
+      "return 10; 9;" to Integer(10),
+      "return 2 * 5; 9;" to Integer(10),
+      "9; return 2 * 5; 9;" to Integer(10)
+    )
+
+    testCases.forEach { (input, expected) ->
+      assertEquals(expected, testEval(input), "evaluating $input failed")
+    }
+  }
+
   private fun testEval(input: String): Object {
     val program = Parser(Lexer(input)).parseProgram()
     return eval(program)

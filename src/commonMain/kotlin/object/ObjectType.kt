@@ -3,5 +3,6 @@ package `object`
 enum class ObjectType {
   INTEGER,
   BOOLEAN,
-  NULL
+  NULL,
+  RETURN_VALUE
 }
