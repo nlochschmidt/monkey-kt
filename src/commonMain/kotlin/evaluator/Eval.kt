@@ -51,6 +51,8 @@ fun evalMinusPrefixOperatorExpression(right: Object): Object {
 fun evalInfixExpression(operator: String, left: Object, right: Object): Object {
   return when {
     left is Integer && right is Integer -> evalIntegerInfixExpression(operator, left, right)
+    operator == "==" -> Bool(left == right)
+    operator == "!=" -> Bool(left != right)
     else -> Null
   }
 }

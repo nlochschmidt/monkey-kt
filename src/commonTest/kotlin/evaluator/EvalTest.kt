@@ -46,7 +46,16 @@ class EvalTest {
       "1 == 1" to Bool(true),
       "1 != 1" to Bool(false),
       "1 == 2" to Bool(false),
-      "1 != 2" to Bool(true)
+      "1 != 2" to Bool(true),
+      "true == true" to Bool(true),
+      "false == false" to Bool(true),
+      "true == false" to Bool(false),
+      "true != false" to Bool(true),
+      "false != true" to Bool(true),
+      "(1 < 2) == true" to Bool(true),
+      "(1 < 2) == false" to Bool(false),
+      "(1 > 2) == true" to Bool(false),
+      "(1 > 2) == false" to Bool(true)
     )
 
     testCases.forEach { (input, expected) ->
