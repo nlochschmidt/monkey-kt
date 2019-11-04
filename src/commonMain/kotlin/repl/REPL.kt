@@ -1,5 +1,6 @@
 package repl
 
+import `object`.Environment
 import evaluator.eval
 import lexer.Lexer
 import parser.Parser
@@ -8,6 +9,7 @@ import token.TokenType.EOF
 class REPL {
 
   fun start(readLine: () -> String?, write: (String) -> Unit) {
+    val env = Environment()
     while (true) {
       write(PROMPT)
       val line = readLine().takeIf { it != "" } ?: return
@@ -18,7 +20,7 @@ class REPL {
         printParseErrors(write, parser.errors)
         continue
       }
-      val result = eval(program)
+      val result = eval(program, env)
       write(result.toString())
       write("\n")
     }

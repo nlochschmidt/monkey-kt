@@ -1,10 +1,6 @@
 package evaluator
 
-import `object`.Bool
-import `object`.Error
-import `object`.Integer
-import `object`.Null
-import `object`.Object
+import `object`.*
 import lexer.Lexer
 import parser.Parser
 import kotlin.test.Test
@@ -121,6 +117,21 @@ class EvalTest {
     }
   }
 
+
+  @Test
+  fun `test let statements`() {
+    val testCases = listOf(
+      "let a = 5; a;" to Integer(5),
+      "let a = 5 * 5; a;" to Integer(25),
+      "let a = 5; let b = a; b;" to Integer(5),
+      "let a = 5; let b = a; let c = a + b + 5; c;" to Integer(15)
+    )
+
+    testCases.forEach { (input, expected) ->
+      assertEquals(expected, testEval(input), "evaluating $input failed")
+    }
+  }
+
   @Test
   fun `test error handling`() {
     val testCases = listOf(
@@ -138,7 +149,8 @@ class EvalTest {
 
           return 1;
         }
-        """.trimIndent() to Error("unknown operator: BOOLEAN + BOOLEAN")
+        """.trimIndent() to Error("unknown operator: BOOLEAN + BOOLEAN"),
+        "foobar" to Error("identifier not found: foobar")
     )
 
     testCases.forEach { (input, expected) ->
@@ -148,7 +160,8 @@ class EvalTest {
 
   private fun testEval(input: String): Object {
     val program = Parser(Lexer(input)).parseProgram()
-    return eval(program)
+    val env = Environment()
+    return eval(program, env)
   }
 
 }
