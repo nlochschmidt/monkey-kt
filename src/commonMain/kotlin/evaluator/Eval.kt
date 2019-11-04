@@ -6,21 +6,36 @@ import `object`.Bool.Companion.TRUE
 import ast.*
 
 fun eval(node: Node): Object {
-  return when(node) {
+  return when (node) {
     is Program -> evalProgram(node)
     is ExpressionStatement -> eval(node.expression)
     is IntegerLiteral -> Integer(node.value)
     is BooleanLiteral -> Bool(node.value)
-    is PrefixExpression -> evalPrefixExpression(node.operator, eval(node.right))
-    is InfixExpression -> {
-      val left = eval(node.left)
-      val right = eval(node.right)
-      evalInfixExpression(node.operator, left, right)
-    }
+    is PrefixExpression ->
+      eval(node.right).unlessError { value ->
+        evalPrefixExpression(node.operator, value)
+      }
+    is InfixExpression ->
+      eval(node.left).unlessError { left ->
+        eval(node.right).unlessError { right ->
+          evalInfixExpression(node.operator, left, right)
+        }
+      }
     is BlockStatement -> evalBlockStatement(node)
     is IfExpression -> evalIfExpression(node)
-    is ReturnStatement -> ReturnValue(eval(node.returnValue))
+    is ReturnStatement -> {
+      eval(node.returnValue).unlessError { value ->
+        ReturnValue(value)
+      }
+    }
     else -> Null
+  }
+}
+
+private fun Object.unlessError(handler: (Object) -> Object): Object {
+  return when (this) {
+    is Error -> this
+    else -> handler(this)
   }
 }
 
@@ -55,10 +70,12 @@ fun evalInfixExpression(operator: String, left: Object, right: Object): Object {
     operator == "!=" -> Bool(left != right)
     left.type != right.type -> Error.create(
       "type mismatch: %s %s %s",
-      left.type, operator, right.type)
+      left.type, operator, right.type
+    )
     else -> Error.create(
       "unknown operator: %s %s %s",
-      left.type, operator, right.type)
+      left.type, operator, right.type
+    )
   }
 }
 
@@ -74,16 +91,18 @@ fun evalIntegerInfixExpression(operator: String, left: Integer, right: Integer):
     "!=" -> Bool(left.value != right.value)
     else -> Error.create(
       "unknown operator: %s %s %s",
-      left.type, operator, right.type)
+      left.type, operator, right.type
+    )
   }
 }
 
 fun evalIfExpression(node: IfExpression): Object {
-  val condition = eval(node.condition)
-  return when {
+  return eval(node.condition).unlessError { condition ->
+    when {
       isTruthy(condition) -> eval(node.consequence)
       node.alternative != null -> eval(node.alternative)
       else -> Null
+    }
   }
 }
 
@@ -94,9 +113,9 @@ fun isTruthy(condition: Object): Boolean {
 fun evalProgram(program: Program): Object {
   return program.statements.fold<Statement, Object>(Null) { _, statement ->
     when (val result = eval(statement)) {
-        is ReturnValue -> return result.value
-        is Error -> return result
-        else -> result
+      is ReturnValue -> return result.value
+      is Error -> return result
+      else -> result
     }
   }
 }
