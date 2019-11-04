@@ -1,6 +1,7 @@
 package evaluator
 
 import `object`.Bool
+import `object`.Error
 import `object`.Integer
 import `object`.Null
 import `object`.Object
@@ -113,6 +114,31 @@ class EvalTest {
         return 1;
       }
       """.trimIndent() to Integer(10)
+    )
+
+    testCases.forEach { (input, expected) ->
+      assertEquals(expected, testEval(input), "evaluating $input failed")
+    }
+  }
+
+  @Test
+  fun `test error handling`() {
+    val testCases = listOf(
+        "5 + true;" to Error("type mismatch: INTEGER + BOOLEAN"),
+        "5 + true; 5;" to Error("type mismatch: INTEGER + BOOLEAN"),
+        "-true" to Error("unknown operator: -BOOLEAN"),
+        "true + false;" to Error("unknown operator: BOOLEAN + BOOLEAN"),
+        "5; true + false; 5" to Error("unknown operator: BOOLEAN + BOOLEAN"),
+        "if (10 > 1) { true + false; }" to Error("unknown operator: BOOLEAN + BOOLEAN"),
+        """
+        if (10 > 1) {
+          if (10 > 1) {
+            return true + false;
+          }
+
+          return 1;
+        }
+        """.trimIndent() to Error("unknown operator: BOOLEAN + BOOLEAN")
     )
 
     testCases.forEach { (input, expected) ->

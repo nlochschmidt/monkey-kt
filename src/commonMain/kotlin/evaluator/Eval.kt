@@ -28,7 +28,7 @@ fun evalPrefixExpression(operator: String, right: Object): Object {
   return when (operator) {
     "!" -> evalBangOperatorExpression(right)
     "-" -> evalMinusPrefixOperatorExpression(right)
-    else -> Null
+    else -> Error.create("unknown operator: %s%s", operator, right::class.simpleName)
   }
 }
 
@@ -44,7 +44,7 @@ fun evalBangOperatorExpression(right: Object): Object {
 fun evalMinusPrefixOperatorExpression(right: Object): Object {
   return when (right) {
     is Integer -> Integer(-right.value)
-    else -> Null
+    else -> Error.create("unknown operator: -%s", right.type)
   }
 }
 
@@ -53,7 +53,12 @@ fun evalInfixExpression(operator: String, left: Object, right: Object): Object {
     left is Integer && right is Integer -> evalIntegerInfixExpression(operator, left, right)
     operator == "==" -> Bool(left == right)
     operator == "!=" -> Bool(left != right)
-    else -> Null
+    left.type != right.type -> Error.create(
+      "type mismatch: %s %s %s",
+      left.type, operator, right.type)
+    else -> Error.create(
+      "unknown operator: %s %s %s",
+      left.type, operator, right.type)
   }
 }
 
@@ -67,7 +72,9 @@ fun evalIntegerInfixExpression(operator: String, left: Integer, right: Integer):
     ">" -> Bool(left.value > right.value)
     "==" -> Bool(left.value == right.value)
     "!=" -> Bool(left.value != right.value)
-    else -> Null
+    else -> Error.create(
+      "unknown operator: %s %s %s",
+      left.type, operator, right.type)
   }
 }
 
@@ -88,6 +95,7 @@ fun evalProgram(program: Program): Object {
   return program.statements.fold<Statement, Object>(Null) { _, statement ->
     when (val result = eval(statement)) {
         is ReturnValue -> return result.value
+        is Error -> return result
         else -> result
     }
   }
@@ -97,6 +105,7 @@ fun evalBlockStatement(block: BlockStatement): Object {
   return block.statements.fold<Statement, Object>(Null) { _, statement ->
     when (val result = eval(statement)) {
       is ReturnValue -> return result
+      is Error -> return result
       else -> result
     }
   }

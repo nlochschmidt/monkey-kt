@@ -15,7 +15,7 @@ data class Integer(val value: Int) : Object {
   override fun toString(): String = value.toString()
 }
 
-class Bool private constructor (val value: Boolean): Object {
+class Bool private constructor(val value: Boolean) : Object {
   override val type: ObjectType = BOOLEAN
 
   override fun toString(): String = value.toString()
@@ -40,4 +40,20 @@ data class ReturnValue(val value: Object) : Object {
   override val type: ObjectType = RETURN_VALUE
 
   override fun toString(): String = value.toString()
+}
+
+data class Error(val message: String) : Object {
+  override val type: ObjectType = ERROR
+
+  override fun toString(): String = "ERROR: $message"
+
+  companion object {
+    fun create(format: String, vararg args: Any?): Error {
+      // TODO: Implement real format
+      val message = args.fold(format) {acc: String, any: Any? ->
+        acc.replaceFirst("%s", any.toString())
+      }
+      return Error(message)
+    }
+  }
 }
