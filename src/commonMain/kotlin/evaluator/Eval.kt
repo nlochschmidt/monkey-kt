@@ -37,6 +37,9 @@ fun eval(node: Node, env: Environment): Object {
     is Identifier -> {
       env[node.value] ?: Error.create("identifier not found: %s", node.value)
     }
+    is FunctionLiteral -> {
+      Function(node.parameters, node.body, env)
+    }
     else -> Null
   }
 }

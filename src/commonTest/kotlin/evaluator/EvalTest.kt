@@ -1,10 +1,12 @@
 package evaluator
 
 import `object`.*
+import ast.BlockStatement
 import lexer.Lexer
 import parser.Parser
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class EvalTest {
 
@@ -155,6 +157,21 @@ class EvalTest {
 
     testCases.forEach { (input, expected) ->
       assertEquals(expected, testEval(input), "evaluating $input failed")
+    }
+  }
+
+  @Test
+  fun `test functions creation`() {
+    val testCases = listOf(
+      "fn(x) { x + 2 };" to (listOf("x") to "(x + 2)")
+    )
+
+    testCases.forEach { (input, expected) ->
+      val (params, body) = expected
+      val evaluated = testEval(input)
+      assertTrue(evaluated is Function, "object is not a function")
+      assertEquals(evaluated.parameters.map { it.value }, params)
+      assertEquals(evaluated.body.toString(), body)
     }
   }
 

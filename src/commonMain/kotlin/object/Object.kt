@@ -1,6 +1,8 @@
 package `object`
 
 import `object`.ObjectType.*
+import ast.BlockStatement
+import ast.Identifier
 
 interface Object {
   val type: ObjectType
@@ -40,6 +42,16 @@ data class ReturnValue(val value: Object) : Object {
   override val type: ObjectType = RETURN_VALUE
 
   override fun toString(): String = value.toString()
+}
+
+data class Function(
+  val parameters: List<Identifier>,
+  val body: BlockStatement,
+  val env: Environment
+) : Object {
+  override val type: ObjectType = FUNCTION
+
+  override fun toString(): String = "fn ${parameters.joinToString(", ", "(", ")")} {\n$body\n}"
 }
 
 data class Error(val message: String) : Object {

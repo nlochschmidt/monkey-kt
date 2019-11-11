@@ -5,5 +5,6 @@ enum class ObjectType {
   BOOLEAN,
   NULL,
   RETURN_VALUE,
-  ERROR
+  ERROR,
+  FUNCTION
 }
