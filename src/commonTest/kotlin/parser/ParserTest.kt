@@ -93,6 +93,18 @@ class ParserTest {
   }
 
   @Test
+  fun `string literal expression`() {
+    val input = "\"hello world\";"
+
+    val program = parseValidProgram(input)
+
+    when (val expression = getExpression(program.statements.first())) {
+      is StringLiteral -> assertEquals("hello world", expression.value)
+      else -> fail("$expression is not a string literal")
+    }
+  }
+
+  @Test
   fun `parsing prefix expression`() {
 
     data class PrefixTestCase<T : Any>(val input: String, val operator: String, val value: T)

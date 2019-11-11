@@ -7,6 +7,7 @@ enum class TokenType {
   // Identifiers + literals
   IDENT, // add, foobar, x, y, ...
   INT,   // 1343456
+  STRING,
 
   // Operators
   ASSIGN,

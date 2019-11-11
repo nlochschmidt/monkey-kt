@@ -183,4 +183,23 @@ class LexerTest {
     }
   }
 
+  @Test
+  fun `nextToken support for strings`() {
+    val input = """
+      "somestring"
+      "Hello World"
+      """.trimIndent()
+
+    val expectedTokens = listOf(
+      Token(STRING, "somestring"),
+      Token(STRING, "Hello World"),
+      Token(EOF, "")
+    )
+
+    val lexer = Lexer(input)
+
+    expectedTokens.forEach {
+      assertEquals(it, lexer.nextToken())
+    }
+  }
 }

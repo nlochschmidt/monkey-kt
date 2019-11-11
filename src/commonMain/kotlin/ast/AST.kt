@@ -60,6 +60,13 @@ data class BooleanLiteral(
   override fun toString(): String = token.literal
 }
 
+data class StringLiteral(
+  override val token: Token,
+  val value: String
+): Expression {
+  override fun toString(): String = token.literal
+}
+
 data class PrefixExpression(
   override val token: Token,
   val operator: String,

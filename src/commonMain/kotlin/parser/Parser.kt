@@ -44,6 +44,7 @@ class Parser(private val lexer: Lexer) {
     INT to ::parseIntegerLiteral,
     TRUE to ::parseBooleanLiteral,
     FALSE to ::parseBooleanLiteral,
+    STRING to ::parseStringLiteral,
     BANG to ::parsePrefixExpression,
     MINUS to ::parsePrefixExpression,
     LPAREN to ::parseGroupedExpression,
@@ -164,6 +165,10 @@ class Parser(private val lexer: Lexer) {
 
   private fun parseBooleanLiteral(): Expression {
     return BooleanLiteral(currentToken, currentTokenIs(TRUE))
+  }
+
+  private fun parseStringLiteral(): Expression {
+    return StringLiteral(currentToken, currentToken.literal)
   }
 
   private fun parsePrefixExpression(): Expression {

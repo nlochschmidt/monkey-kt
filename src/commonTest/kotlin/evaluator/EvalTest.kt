@@ -175,6 +175,17 @@ class EvalTest {
     }
   }
 
+  @Test
+  fun `test string literal`() {
+    val testCases = listOf(
+      "\"Hello World!\"" to MString("Hello World!")
+    )
+
+    testCases.forEach { (input, expected) ->
+      assertEquals(expected, testEval(input), "evaluating $input failed")
+    }
+  }
+
   private fun testEval(input: String): Object {
     val program = Parser(Lexer(input)).parseProgram()
     val env = Environment()

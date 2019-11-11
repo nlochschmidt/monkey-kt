@@ -3,6 +3,7 @@ package `object`
 import `object`.ObjectType.*
 import ast.BlockStatement
 import ast.Identifier
+import token.TokenType
 
 interface Object {
   val type: ObjectType
@@ -30,6 +31,12 @@ class Bool private constructor(val value: Boolean) : Object {
       return if (value) TRUE else FALSE
     }
   }
+}
+
+data class MString(val value: String): Object {
+  override val type: ObjectType = STRING
+
+  override fun toString(): String = value
 }
 
 object Null : Object {

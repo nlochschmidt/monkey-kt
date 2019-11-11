@@ -11,6 +11,7 @@ fun eval(node: Node, env: Environment): Object {
     is ExpressionStatement -> eval(node.expression, env)
     is IntegerLiteral -> Integer(node.value)
     is BooleanLiteral -> Bool(node.value)
+    is StringLiteral -> MString(node.value)
     is PrefixExpression ->
       eval(node.right, env).unlessError { value ->
         evalPrefixExpression(node.operator, value)
