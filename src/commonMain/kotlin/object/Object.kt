@@ -70,9 +70,10 @@ data class Error(val message: String) : Object {
   }
 }
 
-data class Environment(val map: MutableMap<String, Object> = mutableMapOf()) {
-  operator fun get(name: String) = map[name]
+data class Environment(val map: MutableMap<String, Object> = mutableMapOf(), val outer: Environment? = null) {
+  operator fun get(name: String): Object? = map[name] ?: outer?.get(name)
   operator fun set(name: String, value: Object) {
     map[name] = value
   }
+  fun scoped() = Environment(outer = this)
 }

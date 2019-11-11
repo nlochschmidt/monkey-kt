@@ -40,7 +40,39 @@ fun eval(node: Node, env: Environment): Object {
     is FunctionLiteral -> {
       Function(node.parameters, node.body, env)
     }
+    is CallExpression -> {
+      eval(node.function, env).unlessError { function ->
+        val arguments = evalExpressions(node.arguments, env)
+        if (arguments.firstOrNull() is Error) {
+          arguments[0]
+        }
+        applyFunction(function, arguments)
+      }
+    }
     else -> Null
+  }
+}
+
+fun applyFunction(function: Object, evaluatedArguments: List<Object>): Object {
+  if (function !is Function) return Error.create("not a function: %s", function.type)
+
+  val scopedEnv = function.env.scoped()
+  function.parameters.forEachIndexed { index, functionParam ->
+    scopedEnv[functionParam.value] = evaluatedArguments[index]
+  }
+
+  return when(val result = eval(function.body, scopedEnv)) {
+    is ReturnValue -> result.value
+    else -> result
+  }
+}
+
+fun evalExpressions(arguments: List<Expression>, env: Environment): List<Object> {
+  return arguments.fold(emptyList<Object>()) { evaluatedArguments, argument ->
+    when(val evaluated = eval(argument, env)) {
+      is Error -> return listOf(evaluated)
+      else -> evaluatedArguments + evaluated
+    }
   }
 }
 
